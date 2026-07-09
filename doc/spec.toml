@@ -1,0 +1,86 @@
+[metadata]
+title = "ex_dict"
+description = "Example Dictionary"
+version = "0.1.0"
+date = 2026-07-09
+authors = ["Sam Reynolds"]
+
+[config]
+type = "Hunspell"
+set = "UTF-8"
+try = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
+iconv = [{take = "’", give = "'"}]
+
+[prefix.re]
+cross_product = true
+rules = [{add = "re"}]
+
+[suffix."'s"]
+cross_product = true
+rules = [{add = "'s"}]
+
+[suffix.ive]
+cross_product = false
+rules = [
+    {strip = "e", add = "ive", cond = "e"},
+    {add = "ive", cond = "[^e]"},
+]
+
+[replace]
+replace = [
+    {take = "ie", give = "ai"},
+    {take = "alot", give = "a lot"},
+    {take = "are", give = "air"},
+]
+
+[[entry]]
+stem = "Sam"
+keep_case = true
+suffix = ["'s"]
+
+[[entry]]
+stem = "act"
+prefix = ["re"]
+suffix = ["ive"]
+
+[[entry]]
+stem = "dismiss"
+no_suggest = true
+suffix = ["ive"]
+
+
+# This is will generate the following files in the conventional Hunspell format
+# (with possibly different flag labels):
+# 
+#
+# ex_dict.aff
+# -----------
+# SET UTF-8
+# TRY esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'
+# ICONV 1
+# ICONV ’ '
+# NOSUGGEST !
+# KEEPCASE $
+#
+# PFX A Y 1
+# PFX A   0     re         .
+# 
+# SFX M Y 1
+# SFX M   0     's         .
+#
+# SFX V N 2
+# SFX V   e     ive        e
+# SFX V   0     ive        [^e]
+#
+# REP ie ai
+# REP alot a_lot
+# REP are air
+# 
+#
+# ex_dict.dic
+# -----------
+# 3
+# Sam/$M
+# act/AV
+# dismiss/!V
+# 
