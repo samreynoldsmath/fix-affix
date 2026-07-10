@@ -1,0 +1,10 @@
+#!/bin/sh
+cargo fmt -- --check || {
+    echo "Formatting issues. Run 'cargo fmt' to fix."; exit 1;
+}
+
+cargo clippy -- -D warnings || {
+    echo "Clippy warnings found. Fix them before committing."; exit 1;
+}
+
+exit 0
