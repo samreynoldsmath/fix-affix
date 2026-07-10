@@ -3,13 +3,12 @@ title = "ex_dict"
 description = "Example Dictionary"
 version = "0.1.0"
 date = 2026-07-09
-authors = ["Sam Reynolds"]
+authors = ["Sam Reynolds (github.com/samreynoldsmath)"]
 
 [config]
-type = "Hunspell"
-set = "UTF-8"
-try = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
-iconv = [{take = "’", give = "'"}]
+encoding = "UTF-8"
+try_characters = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
+input_conversion = [{remove = "’", add = "'"}]
 
 [prefix.re]
 cross_product = true
@@ -20,18 +19,18 @@ cross_product = true
 rules = [{add = "'s"}]
 
 [suffix.ive]
-cross_product = false
 rules = [
     {strip = "e", add = "ive", cond = "e"},
     {add = "ive", cond = "[^e]"},
 ]
 
-[replace]
-replace = [
-    {take = "ie", give = "ai"},
-    {take = "alot", give = "a lot"},
-    {take = "are", give = "air"},
-]
+[[replace]]
+remove = "ie"
+add = "ai"
+
+[[replace]]
+remove = "alot"
+add = "a lot"
 
 [[entry]]
 stem = "Sam"
@@ -72,9 +71,9 @@ suffix = ["ive"]
 # SFX V   e     ive        e
 # SFX V   0     ive        [^e]
 #
+# REP 2
 # REP ie ai
 # REP alot a_lot
-# REP are air
 # 
 #
 # ex_dict.dic
