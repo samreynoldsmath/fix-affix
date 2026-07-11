@@ -1,4 +1,4 @@
-use fix_affix::{build_hunspell_dictionary, load_toml_dict};
+use fix_affix::{TomlDict, build_hunspell_dictionary, load_toml_dict};
 use std::env::args;
 use std::fs;
 use std::path::Path;
@@ -10,7 +10,7 @@ fn main() {
     }
     let in_path: &Path = Path::new(&args[1]);
     let out_path: &Path = Path::new(&args[2]);
-    let dict: fix_affix::TomlDict = match load_toml_dict(in_path) {
+    let dict: TomlDict = match load_toml_dict(in_path) {
         Ok(data) => data,
         Err(e) => panic!("TOML dictionary not loaded ({:?}): {}", in_path, e),
     };
