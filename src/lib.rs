@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::{collections::HashMap, fs, path::Path};
 use toml::value::Date;
@@ -118,4 +118,33 @@ pub fn load_toml_dict(path: &Path) -> Result<TomlDict> {
     let raw: String = fs::read_to_string(path)?;
     let dict: TomlDict = toml::from_str(&raw)?;
     Ok(dict)
+}
+
+pub fn build_hunspell_dictionary(out_path: &Path, dict: &TomlDict) -> Result<()> {
+    let base_filename: String = base_filename_from_dir(out_path)?;
+    let dic_filename: &Path = &out_path.join(Path::new(&(base_filename.clone() + ".dic")));
+    let aff_filename: &Path = &out_path.join(Path::new(&(base_filename.clone() + ".aff")));
+    let dic: String = build_dic(dict)?;
+    let aff: String = build_aff(dict)?;
+    fs::write(dic_filename, dic)?;
+    fs::write(aff_filename, aff)?;
+    Ok(())
+}
+
+fn base_filename_from_dir(out_path: &Path) -> Result<String> {
+    let local_dir_name: String = out_path
+        .file_name()
+        .context("Cannot find local folder name ({out_path:?})")?
+        .to_str()
+        .context("Cannot convert path to string")?
+        .to_string();
+    Ok(local_dir_name)
+}
+
+fn build_dic(_dict: &TomlDict) -> Result<String> {
+    todo!()
+}
+
+fn build_aff(_dict: &TomlDict) -> Result<String> {
+    todo!()
 }
