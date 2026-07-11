@@ -34,13 +34,13 @@ struct DictConfig {
     #[serde(default)]
     complex_prefixes: bool,
     language_code: Option<String>,
-    ignore_characters: Option<Vec<String>>,
+    ignore_characters: Option<String>,
     try_characters: Option<String>,
     max_compound_suggestions: Option<u8>,
     max_n_gram_suggestions: Option<u8>,
-    max_n_gram_diff: Option<u8>,
     max_diff: Option<u8>,
-    only_max_diff: Option<u8>,
+    #[serde(default)]
+    only_max_diff: bool,
     #[serde(default)]
     no_split_suggestions: bool,
     #[serde(default)]
@@ -284,8 +284,9 @@ fn build_dic(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> Result<String> {
 }
 
 fn build_aff(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> Result<String> {
-    let mut content: String = aff_header(dict);
-
+    let mut content: String = write_aff_header(dict);
+    content += &write_aff_preamble(dict);
+    content += &write_flag_keys();
     let prefixes = match &dict.prefix {
         Some(x) => x.clone(), // TODO: unnecessary cloning
         None => HashMap::new(),
@@ -299,18 +300,87 @@ fn build_aff(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> Result<String> {
     Ok(content)
 }
 
-fn aff_header(dict: &TomlDict) -> String {
+fn write_aff_header(dict: &TomlDict) -> String {
     let mut content: String = format!("# {} ({})\n", dict.metadata.title, dict.metadata.version);
     content += &format!("# {}\n#\n", dict.metadata.description);
-    content += &format!("# {}\n#\n", dict.metadata.date);
+    content += &format!("# {}\n#\n", dict.metadata.date); // TODO: use current datetime
     content += "# Authors:\n";
     for author in &dict.metadata.authors {
         content += &format!("#   {}\n", author);
     }
     content += "#\n# This Hunspell dictionary was created using the fix-affix tool\n";
     content += "#   https://github.com/samreynoldsmath/fix-affix\n";
-
+    content += "#\n\n";
     content
+}
+
+fn write_aff_preamble(dict: &TomlDict) -> String {
+    let config = match &dict.config {
+        Some(config) => config,
+        _ => return "".to_string(),
+    };
+    let mut content: String = "FLAG num\n".to_string();
+    if let Some(encoding) = &config.encoding {
+        content += &format!("SET {}\n", encoding);
+    };
+    if config.complex_prefixes {
+        content += "COMPLEXPREFIXES\n"
+    }
+    if let Some(language_code) = &config.language_code {
+        content += &format!("LANG {}\n", language_code);
+    }
+    if let Some(ignore_characters) = &config.ignore_characters {
+        content += &format!("IGNORE {}\n", ignore_characters);
+    }
+    if let Some(try_characters) = &config.try_characters {
+        content += &format!("TRY {}\n", try_characters);
+    }
+    if let Some(max_compound_suggestions) = &config.max_compound_suggestions {
+        content += &format!("MAXCPDSUGS {}\n", max_compound_suggestions);
+    }
+    if let Some(max_n_gram_suggestions) = &config.max_n_gram_suggestions {
+        content += &format!("MAXNGRAMSUGS {}\n", max_n_gram_suggestions);
+    }
+    if let Some(max_diff) = &config.max_diff {
+        content += &format!("MAXDIFF {}\n", max_diff);
+    }
+    if config.only_max_diff {
+        content += "ONLYMAXDIFF\n";
+    }
+    if config.no_split_suggestions {
+        content += "NOSPLITSUGS\n";
+    }
+    if config.suggest_with_dots {
+        content += "SUGSWITHDOTS\n";
+    }
+    if let Some(input_conversion) = &config.input_conversion
+        && !input_conversion.is_empty()
+    {
+        content += &format!("ICONV {}\n", input_conversion.len());
+        for iconv in input_conversion {
+            content += &format!("ICONV {} {}\n", iconv.remove, iconv.add);
+        }
+    }
+    content
+}
+
+fn write_flag_keys() -> String {
+    "NOSUGGEST 0
+WARN 1
+FORBIDWARN 2
+COMPOUNDFLAG 3
+COMPOUNDBEGIN 4
+COMPOUNDLAST 5
+COMPOUNDMIDDLE 6
+ONLYINCOMPOUND 7
+COMPOUNDPERMITFLAG 8
+FORBIDDENWORD 9
+KEEPCASE 10
+NEEDAFFIX 11
+SUBSTANDARD 12
+CIRCUMFIX 13
+"
+    .to_string()
 }
 
 fn write_affix_rules(
