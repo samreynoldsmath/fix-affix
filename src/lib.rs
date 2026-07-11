@@ -283,8 +283,19 @@ fn build_dic(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> Result<String> {
     Ok(content)
 }
 
-fn build_aff(dict: &TomlDict, _flag_codes: &FlagCodeLookup) -> Result<String> {
-    let content: String = aff_header(dict);
+fn build_aff(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> Result<String> {
+    let mut content: String = aff_header(dict);
+
+    let prefixes = match &dict.prefix {
+        Some(x) => x.clone(), // TODO: unnecessary cloning
+        None => HashMap::new(),
+    };
+    let suffixes: HashMap<String, Affix> = match &dict.suffix {
+        Some(x) => x.clone(), // TODO: unnecessary cloning
+        None => HashMap::new(),
+    };
+    content += &write_affix_rules(&prefixes, "PFX", flag_codes);
+    content += &write_affix_rules(&suffixes, "SFX", flag_codes);
     Ok(content)
 }
 
@@ -298,5 +309,43 @@ fn aff_header(dict: &TomlDict) -> String {
     }
     content += "#\n# This Hunspell dictionary was created using the fix-affix tool\n";
     content += "#   https://github.com/samreynoldsmath/fix-affix\n";
+
+    content
+}
+
+fn write_affix_rules(
+    affixes: &HashMap<String, Affix>,
+    affix_str: &str,
+    flag_codes: &FlagCodeLookup,
+) -> String {
+    let mut content: String = "".to_string();
+    for (a, afx) in affixes {
+        let num_rules: usize = afx.rules.len();
+        if num_rules == 0 {
+            continue;
+        }
+        let code: FlagCode = flag_codes[a];
+        let cross_prod: &str = match afx.cross_product {
+            true => "Y",
+            false => "N",
+        };
+        content += &format!("\n{} {} {} {}\n", affix_str, code, cross_prod, num_rules);
+        for rule in &afx.rules {
+            let strip: &str = match &rule.strip {
+                Some(s) => s,
+                None => "0",
+            };
+            let add: &str = match &rule.add {
+                // TODO shouldn't be optional
+                Some(s) => s,
+                None => "0",
+            };
+            let cond: &str = match &rule.cond {
+                Some(s) => s,
+                None => ".",
+            };
+            content += &format!("{} {}   {} {} {}\n", affix_str, code, strip, add, cond);
+        }
+    }
     content
 }
