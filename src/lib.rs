@@ -283,6 +283,20 @@ fn build_dic(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> Result<String> {
     Ok(content)
 }
 
-fn build_aff(_dict: &TomlDict, _flag_codes: &FlagCodeLookup) -> Result<String> {
-    todo!()
+fn build_aff(dict: &TomlDict, _flag_codes: &FlagCodeLookup) -> Result<String> {
+    let content: String = aff_header(dict);
+    Ok(content)
+}
+
+fn aff_header(dict: &TomlDict) -> String {
+    let mut content: String = format!("# {} ({})\n", dict.metadata.title, dict.metadata.version);
+    content += &format!("# {}\n#\n", dict.metadata.description);
+    content += &format!("# {}\n#\n", dict.metadata.date);
+    content += "# Authors:\n";
+    for author in &dict.metadata.authors {
+        content += &format!("#   {}\n", author);
+    }
+    content += "#\n# This Hunspell dictionary was created using the fix-affix tool\n";
+    content += "#   https://github.com/samreynoldsmath/fix-affix\n";
+    content
 }
