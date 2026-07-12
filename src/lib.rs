@@ -214,6 +214,9 @@ fn collect_flag_codes(entry: &DictEntry, flag_codes: &FlagCodeLookup) -> Vec<Fla
 
     if let Some(prefixes) = &entry.prefix {
         for p in prefixes {
+            if !flag_codes.contains_key(p) {
+                panic!("No flag code for {}", p);
+            }
             let code: FlagCode = flag_codes[p];
             entry_codes.push(code);
         }
@@ -221,6 +224,9 @@ fn collect_flag_codes(entry: &DictEntry, flag_codes: &FlagCodeLookup) -> Vec<Fla
 
     if let Some(suffixes) = &entry.suffix {
         for s in suffixes {
+            if !flag_codes.contains_key(s) {
+                panic!("No flag code for {}", s);
+            }
             let code: FlagCode = flag_codes[s];
             entry_codes.push(code);
         }
@@ -395,6 +401,9 @@ fn write_affix_rules(
         if num_rules == 0 {
             continue;
         }
+        if !flag_codes.contains_key(a) {
+            panic!("No flag code for {}", a);
+        }
         let code: FlagCode = flag_codes[a];
         let cross_prod: &str = match afx.cross_product {
             true => "Y",
@@ -423,10 +432,16 @@ fn write_affix_rules(
             if !stacks.is_empty() {
                 content += "/";
                 for stack_rule in stacks.iter().take(stacks.len() - 1) {
+                    if !flag_codes.contains_key(stack_rule) {
+                        panic!("No flag code for {}", stack_rule);
+                    }
                     let stack_code: FlagCode = flag_codes[stack_rule];
                     content += &format!("{},", stack_code)
                 }
                 if let Some(stack_rule) = stacks.last() {
+                    if !flag_codes.contains_key(stack_rule) {
+                        panic!("No flag code for {}", stack_rule);
+                    }
                     let stack_code: FlagCode = flag_codes[stack_rule];
                     content += &format!("{}", stack_code);
                 }
