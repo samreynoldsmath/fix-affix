@@ -7,18 +7,24 @@ authors = ["Sam Reynolds (github.com/samreynoldsmath)"]
 
 [config]
 encoding = "UTF-8"
+additional_word_characters = "'"
 try_characters = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
 input_conversion = [{remove = "’", add = "'"}]
+complex_prefixes = true
+
+[prefix.non]
+cross_product = true
+rules = [{add = "non"}]
 
 [prefix.re]
 cross_product = true
-rules = [{add = "re"}]
+rules = [{add = "re", stack = ["non"]}]
 
 [suffix."'s"]
-cross_product = true
 rules = [{add = "'s"}]
 
 [suffix.ive]
+cross_product = true
 rules = [
     {strip = "e", add = "ive", cond = "e"},
     {add = "ive", cond = "[^e]"},
@@ -39,7 +45,7 @@ suffix = ["'s"]
 
 [[entry]]
 stem = "act"
-prefix = ["re"]
+prefix = ["non", "re"]
 suffix = ["ive"]
 
 [[entry]]
@@ -55,21 +61,26 @@ suffix = ["ive"]
 # ex_dict.aff
 # -----------
 # SET UTF-8
+# WORDCHARS '
 # TRY esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'
 # ICONV 1
 # ICONV ’ '
 # NOSUGGEST !
 # KEEPCASE $
+# COMPLEXPREFIXES
 #
 # PFX A Y 1
-# PFX A   0     re         .
-# 
-# SFX M Y 1
-# SFX M   0     's         .
+# PFX A   0     non        .
 #
-# SFX V N 2
+# PFX A Y 1
+# PFX A   0     re/N       .
+#
+# SFX V Y 2
 # SFX V   e     ive        e
 # SFX V   0     ive        [^e]
+# 
+# SFX M N 1
+# SFX M   0     's         .
 #
 # REP 2
 # REP ie ai

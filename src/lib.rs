@@ -11,14 +11,14 @@ pub struct TomlDict {
     config: Option<DictConfig>,
     prefix: Option<HashMap<String, Affix>>,
     suffix: Option<HashMap<String, Affix>>,
-    replace: Option<Vec<Replace>>,
+    replace: Option<Vec<Replace>>, // TODO
     entry: Option<Vec<DictEntry>>,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct DictMetadata {
+    // TODO make fields optional
     title: String,
     description: String,
     version: String,
@@ -26,11 +26,11 @@ struct DictMetadata {
     authors: Vec<String>,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct DictConfig {
     encoding: Option<String>,
+    additional_word_characters: Option<String>,
     #[serde(default)]
     complex_prefixes: bool,
     language_code: Option<String>,
@@ -48,7 +48,6 @@ struct DictConfig {
     input_conversion: Option<Vec<Replace>>,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Replace {
@@ -56,7 +55,6 @@ struct Replace {
     add: String,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 struct DictEntry {
@@ -91,13 +89,13 @@ struct DictEntry {
     substandard: bool,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 struct CondReplace {
     strip: Option<String>,
     add: Option<String>,
     cond: Option<String>,
+    stack: Option<Vec<String>>,
 }
 
 #[allow(dead_code)]
@@ -108,9 +106,9 @@ struct Affix {
     #[serde(default)]
     cross_product: bool,
     #[serde(default)]
-    circum_fix: bool,
+    circum_fix: bool, // TODO
     #[serde(default)]
-    substandard: bool,
+    substandard: bool, // TODO
 }
 
 #[derive(Clone, Copy)]
@@ -323,6 +321,9 @@ fn write_aff_preamble(dict: &TomlDict) -> String {
     if let Some(encoding) = &config.encoding {
         content += &format!("SET {}\n", encoding);
     };
+    if let Some(word_char) = &config.additional_word_characters {
+        content += &format!("WORDCHARS {}\n", word_char);
+    };
     if config.complex_prefixes {
         content += "COMPLEXPREFIXES\n"
     }
@@ -410,11 +411,27 @@ fn write_affix_rules(
                 Some(s) => s,
                 None => "0",
             };
+            let stacks: &Vec<String> = match &rule.stack {
+                Some(stacks) => stacks,
+                None => &vec![],
+            };
             let cond: &str = match &rule.cond {
                 Some(s) => s,
                 None => ".",
             };
-            content += &format!("{} {}   {} {} {}\n", affix_str, code, strip, add, cond);
+            content += &format!("{} {}   {} {}", affix_str, code, strip, add);
+            if !stacks.is_empty() {
+                content += "/";
+                for stack_rule in stacks.iter().take(stacks.len() - 1) {
+                    let stack_code: FlagCode = flag_codes[stack_rule];
+                    content += &format!("{},", stack_code)
+                }
+                if let Some(stack_rule) = stacks.last() {
+                    let stack_code: FlagCode = flag_codes[stack_rule];
+                    content += &format!("{}", stack_code);
+                }
+            }
+            content += &format!(" {}\n", cond);
         }
     }
     content
