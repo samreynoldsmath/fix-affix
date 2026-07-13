@@ -1,7 +1,9 @@
+mod context;
 mod process;
 mod read;
 mod write;
 
+pub use context::ContextManager;
 use process::{build_flag_code_look_up, collect_flag_codes};
 pub use read::TomlDict;
 pub use read::load_toml_dict;
