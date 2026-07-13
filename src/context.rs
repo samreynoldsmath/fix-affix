@@ -1,8 +1,9 @@
 use std::path::{Path, PathBuf};
 
 pub struct ContextManager {
-    pub in_file: PathBuf,
-    pub out_dir: PathBuf,
+    pub toml_file: PathBuf,
+    pub aff_file: PathBuf,
+    pub dic_file: PathBuf,
 }
 
 impl ContextManager {
@@ -10,19 +11,13 @@ impl ContextManager {
         if args.len() < 2 {
             panic!("Please supply input file");
         }
-
-        let in_file: PathBuf = Path::new(&args[1]).to_owned();
-        let out_dir: PathBuf = Path::new(&args[2]).to_owned();
-
-        if !out_dir.exists()
-            && let Err(e) = std::fs::create_dir(&out_dir)
-        {
-            panic!("Unable to create directory ({:?}): {}", out_dir, e)
+        let toml_file: PathBuf = Path::new(&args[1]).to_owned();
+        let aff_file: PathBuf = toml_file.with_extension("aff");
+        let dic_file: PathBuf = toml_file.with_extension("dic");
+        ContextManager {
+            toml_file,
+            aff_file,
+            dic_file,
         }
-        if !out_dir.is_dir() {
-            panic!("The output path ({:?}) must be a directory", out_dir);
-        }
-
-        ContextManager { in_file, out_dir }
     }
 }

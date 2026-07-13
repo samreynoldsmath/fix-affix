@@ -22,13 +22,11 @@ cargo install fix-affix
 See [the spec file](doc/spec.toml) to see how to write your dictionary in TOML.
 Run
 ```bash
-fix-affix my_dict.toml my_dict
+fix-affix my_dict.toml
 ```
-which will create `my_dict`:
+which will create `my_dict.dic`/`my_dict.aff` in the same directory as `my_dict.toml`:
 ```
 .
-├── my_dict
-│   ├── my_dict.aff
-│   └── my_dict.dic
+├── my_dict.aff
+├── my_dict.dic
 └── my_dict.toml
-```

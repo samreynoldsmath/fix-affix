@@ -2,29 +2,16 @@ use crate::{
     Affix, DictEntry, FlagCode, FlagCodeLookup, TomlDict, build_flag_code_look_up,
     collect_flag_codes,
 };
-use anyhow::{Context, Result};
+use anyhow::Result;
 use std::{collections::HashMap, fs, path::Path};
 
-pub fn build_hunspell_dictionary(out_path: &Path, dict: &TomlDict) -> Result<()> {
+pub fn build_hunspell_dictionary(dict: &TomlDict, aff_file: &Path, dic_file: &Path) -> Result<()> {
     let flag_codes: FlagCodeLookup = build_flag_code_look_up(dict)?;
-    let base_filename: String = base_filename_from_dir(out_path)?;
-    let dic_filename: &Path = &out_path.join(Path::new(&(base_filename.clone() + ".dic")));
     let dic: String = build_dic(dict, &flag_codes)?;
-    fs::write(dic_filename, dic)?;
-    let aff_filename: &Path = &out_path.join(Path::new(&(base_filename.clone() + ".aff")));
     let aff: String = build_aff(dict, &flag_codes)?;
-    fs::write(aff_filename, aff)?;
+    fs::write(dic_file, dic)?;
+    fs::write(aff_file, aff)?;
     Ok(())
-}
-
-fn base_filename_from_dir(out_path: &Path) -> Result<String> {
-    let local_dir_name: String = out_path
-        .file_name()
-        .context("Cannot find local folder name ({out_path:?})")?
-        .to_str()
-        .context("Cannot convert path to string")?
-        .to_string();
-    Ok(local_dir_name)
 }
 
 fn build_dic(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> Result<String> {
