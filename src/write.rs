@@ -1,6 +1,6 @@
 use crate::{
     Affix, DictEntry, FlagCode, FlagCodeLookup, TomlDict, build_flag_code_look_up,
-    collect_flag_codes,
+    collect_flag_codes, get_sorted_affixes,
 };
 use anyhow::Result;
 use std::{collections::HashMap, fs, path::Path};
@@ -147,7 +147,9 @@ fn write_affix_rules(
     flag_codes: &FlagCodeLookup,
 ) -> String {
     let mut content: String = "".to_string();
-    for (a, afx) in affixes {
+    // TODO: vectorization should only happen once
+    let vec_affix: Vec<(&String, &Affix)> = get_sorted_affixes(affixes);
+    for (a, afx) in vec_affix {
         let num_rules: usize = afx.rules.len();
         if num_rules == 0 {
             continue;

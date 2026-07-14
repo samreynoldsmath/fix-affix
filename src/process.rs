@@ -2,14 +2,21 @@ use crate::{Affix, DictEntry, FlagCode, FlagCodeLookup, TomlDict};
 use anyhow::Result;
 use std::collections::HashMap;
 
+pub fn get_sorted_affixes(affixes: &HashMap<String, Affix>) -> Vec<(&String, &Affix)> {
+    // TODO: this should only be done once
+    let mut vec_affix: Vec<(&String, &Affix)> = affixes.iter().collect();
+    vec_affix.sort_by_key(|x| x.0);
+    vec_affix
+}
+
 pub(crate) fn build_flag_code_look_up(dict: &TomlDict) -> Result<FlagCodeLookup> {
     let prefixes = match &dict.prefix {
-        Some(x) => x.clone(), // TODO: unnecessary cloning
-        None => HashMap::new(),
+        Some(x) => get_sorted_affixes(x),
+        None => vec![],
     };
-    let suffixes: HashMap<String, Affix> = match &dict.suffix {
-        Some(x) => x.clone(), // TODO: unnecessary cloning
-        None => HashMap::new(),
+    let suffixes = match &dict.suffix {
+        Some(x) => get_sorted_affixes(x),
+        None => vec![],
     };
 
     let k: usize = prefixes.len();
@@ -40,12 +47,12 @@ pub(crate) fn build_flag_code_look_up(dict: &TomlDict) -> Result<FlagCodeLookup>
 
     let prefix_start: u16 = 100;
     for (i, p) in (prefix_start..).zip(prefixes) {
-        flag_codes.insert(p.0, FlagCode(i));
+        flag_codes.insert(p.0.to_string(), FlagCode(i));
     }
 
     let suffix_start: u16 = (100 + k) as u16;
     for (i, p) in (suffix_start..).zip(suffixes) {
-        flag_codes.insert(p.0, FlagCode(i));
+        flag_codes.insert(p.0.to_string(), FlagCode(i));
     }
 
     Ok(flag_codes)
