@@ -1,9 +1,13 @@
 use crate::{
-    Affix, DictEntry, FlagCode, FlagCodeLookup, TomlDict, build_flag_code_look_up,
+    Affix, DictEntry, FlagCode, FlagCodeLookup, TomlDict, VERSION, build_flag_code_look_up,
     collect_flag_codes, get_sorted_affixes,
 };
 use anyhow::Result;
+use chrono::prelude::{Local, Utc};
 use std::{collections::HashMap, fs, path::Path};
+
+const DATE_FMT: &str = "%Y-%m-%d %H:%M";
+const REPO_URL: &str = "https://github.com/samreynoldsmath/fix-affix";
 
 pub fn build_hunspell_dictionary(dict: &TomlDict, aff_file: &Path, dic_file: &Path) -> Result<()> {
     let flag_codes: FlagCodeLookup = build_flag_code_look_up(dict)?;
@@ -56,16 +60,20 @@ fn build_aff(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> Result<String> {
 }
 
 fn write_aff_header(dict: &TomlDict) -> String {
+    let now: String = Local::now().format(DATE_FMT).to_string();
+    let utc: String = Utc::now().format(DATE_FMT).to_string();
+
     let mut content: String = format!("# {} ({})\n", dict.metadata.title, dict.metadata.version);
     content += &format!("# {}\n#\n", dict.metadata.description);
-    content += &format!("# {}\n#\n", dict.metadata.date); // TODO: use current datetime
+    content += &format!("# {} (UTC {})\n#\n", now, utc);
     content += "# Authors:\n";
     for author in &dict.metadata.authors {
         content += &format!("#   {}\n", author);
     }
-    content += "#\n# This Hunspell dictionary was created using the fix-affix tool\n";
-    content += "#   https://github.com/samreynoldsmath/fix-affix\n";
-    content += "#\n\n";
+
+    content += "#\n# This Hunspell dictionary was created using ";
+    content += &format!("fix-affix v{}\n", VERSION);
+    content += &format!("#   {}\n\n", REPO_URL);
     content
 }
 

@@ -3,7 +3,6 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::path::Path;
-use toml::value::Date;
 
 pub fn load_toml_dict(path: &Path) -> Result<TomlDict> {
     let raw: String = std::fs::read_to_string(path)?;
@@ -52,7 +51,6 @@ pub(crate) struct DictMetadata {
     pub(crate) title: String,
     pub(crate) description: String,
     pub(crate) version: String,
-    pub(crate) date: Date,
     pub(crate) authors: Vec<String>,
 }
 
