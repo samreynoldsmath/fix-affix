@@ -93,24 +93,20 @@ pub(crate) fn collect_flag_codes(entry: &DictEntry, flag_codes: &FlagCodeLookup)
         entry_codes.push(FlagCode(12));
     }
 
-    if let Some(prefixes) = &entry.prefix {
-        for p in prefixes {
-            if !flag_codes.contains_key(p) {
-                panic!("No flag code for {}", p);
-            }
-            let code: FlagCode = flag_codes[p];
-            entry_codes.push(code);
+    for p in &entry.prefix {
+        if !flag_codes.contains_key(p) {
+            panic!("No flag code for {}", p);
         }
+        let code: FlagCode = flag_codes[p];
+        entry_codes.push(code);
     }
 
-    if let Some(suffixes) = &entry.suffix {
-        for s in suffixes {
-            if !flag_codes.contains_key(s) {
-                panic!("No flag code for {}", s);
-            }
-            let code: FlagCode = flag_codes[s];
-            entry_codes.push(code);
+    for s in &entry.suffix {
+        if !flag_codes.contains_key(s) {
+            panic!("No flag code for {}", s);
         }
+        let code: FlagCode = flag_codes[s];
+        entry_codes.push(code);
     }
 
     entry_codes

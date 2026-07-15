@@ -60,37 +60,24 @@ pub(crate) struct Replace {
     pub(crate) add: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug, Default, Deserialize, Clone)]
+#[serde(deny_unknown_fields, default)]
 pub(crate) struct DictEntry {
     pub(crate) stem: String,
-    pub(crate) prefix: Option<Vec<String>>,
-    pub(crate) suffix: Option<Vec<String>>,
-    #[serde(default)]
+    pub(crate) prefix: Vec<String>,
+    pub(crate) suffix: Vec<String>,
     pub(crate) no_suggest: bool,
-    #[serde(default)]
     pub(crate) warn: bool,
-    #[serde(default)]
     pub(crate) forbid_warn: bool,
-    #[serde(default)]
     pub(crate) compound_flag: bool,
-    #[serde(default)]
     pub(crate) compound_begin: bool,
-    #[serde(default)]
     pub(crate) compound_last: bool,
-    #[serde(default)]
     pub(crate) compound_middle: bool,
-    #[serde(default)]
     pub(crate) only_in_compound: bool,
-    #[serde(default)]
     pub(crate) compound_permit_flag: bool,
-    #[serde(default)]
     pub(crate) forbidden_word: bool,
-    #[serde(default)]
     pub(crate) keep_case: bool,
-    #[serde(default)]
     pub(crate) need_affix: bool,
-    #[serde(default)]
     pub(crate) substandard: bool,
 }
 
