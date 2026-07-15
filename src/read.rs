@@ -89,11 +89,16 @@ pub(crate) struct CondReplace {
 #[serde(deny_unknown_fields, default)]
 pub(crate) struct Affix {
     pub(crate) rules: Vec<CondReplace>,
+    #[serde(default = "bool_true")]
     pub(crate) cross_product: bool,
     #[allow(dead_code)] // TODO
     pub(crate) circum_fix: bool,
     #[allow(dead_code)] // TODO
     pub(crate) substandard: bool,
+}
+
+fn bool_true() -> bool {
+    true
 }
 
 #[derive(Clone, Copy)]

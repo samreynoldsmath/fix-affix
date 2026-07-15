@@ -15,18 +15,16 @@ input_conversion = [{remove = "’", add = "'"}]
 complex_prefixes = true
 
 [prefix.non]
-cross_product = true
 rules = [{add = "non"}]
 
 [prefix.re]
-cross_product = true
 rules = [{add = "re", stack = ["non"]}]
 
 [suffix."'s"]
+cross_product = false
 rules = [{add = "'s"}]
 
 [suffix.ive]
-cross_product = true
 rules = [
     {strip = "e", add = "ive", cond = "e"},
     {add = "ive", cond = "[^e]"},
