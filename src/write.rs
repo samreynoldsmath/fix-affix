@@ -1,6 +1,7 @@
 use crate::{
     Affix, DictEntry, FlagCode, FlagCodeLookup, TomlDict, VERSION, build_flag_code_look_up,
     collect_flag_codes, get_sorted_affixes,
+    process::get_used_flags,
     read::{CondReplace, Replace},
 };
 use anyhow::Result;
@@ -47,9 +48,11 @@ fn build_aff_string(
     dict: &TomlDict,
     flag_codes: &FlagCodeLookup,
 ) -> String {
+    let used_flags: Vec<FlagCode> = get_used_flags(&dict.entry, flag_codes);
+
     let mut content: String = build_aff_header(dict);
     content += &build_aff_preamble_string(dict);
-    content += &build_flag_keys_string();
+    content += &build_flag_keys_string(used_flags);
     content += &build_affix_rules_string(prefixes, "PFX", flag_codes);
     content += &build_affix_rules_string(suffixes, "SFX", flag_codes);
     content += &build_replacements_string(dict.replace.clone());
@@ -121,23 +124,28 @@ fn build_aff_preamble_string(dict: &TomlDict) -> String {
     content
 }
 
-fn build_flag_keys_string() -> String {
-    "NOSUGGEST 0
-WARN 1
-FORBIDWARN 2
-COMPOUNDFLAG 3
-COMPOUNDBEGIN 4
-COMPOUNDLAST 5
-COMPOUNDMIDDLE 6
-ONLYINCOMPOUND 7
-COMPOUNDPERMITFLAG 8
-FORBIDDENWORD 9
-KEEPCASE 10
-NEEDAFFIX 11
-SUBSTANDARD 12
-CIRCUMFIX 13
-"
-    .to_string()
+fn build_flag_keys_string(used_flags: Vec<FlagCode>) -> String {
+    let mut content: String = "".to_string();
+    for code in used_flags {
+        content += match code {
+            FlagCode(0) => "NOSUGGEST 0\n",
+            FlagCode(1) => "WARN 1\n",
+            FlagCode(2) => "FORBIDWARN 2\n",
+            FlagCode(3) => "COMPOUNDFLAG 3\n",
+            FlagCode(4) => "COMPOUNDBEGIN 4\n",
+            FlagCode(5) => "COMPOUNDLAST 5\n",
+            FlagCode(6) => "COMPOUNDMIDDLE 6\n",
+            FlagCode(7) => "ONLYINCOMPOUND 7\n",
+            FlagCode(8) => "COMPOUNDPERMITFLAG 8\n",
+            FlagCode(9) => "FORBIDDENWORD 9\n",
+            FlagCode(10) => "KEEPCASE 10\n",
+            FlagCode(11) => "NEEDAFFIX 11\n",
+            FlagCode(12) => "SUBSTANDARD 12\n",
+            FlagCode(13) => "CIRCUMFIX 13\n",
+            FlagCode(x) => panic!("Unknown FlagCode({})", x),
+        }
+    }
+    content
 }
 
 fn build_affix_rules_string(

@@ -2,7 +2,24 @@ use crate::{Affix, DictEntry, FlagCode, FlagCodeLookup};
 use anyhow::{Error, Result};
 use std::collections::HashMap;
 
-pub fn get_sorted_affixes(affixes: &HashMap<String, Affix>) -> Vec<(&String, &Affix)> {
+pub(crate) fn get_used_flags(entries: &[DictEntry], flag_codes: &FlagCodeLookup) -> Vec<FlagCode> {
+    let mut used_flags: Vec<FlagCode> = vec![];
+    for entry in entries {
+        let codes: Vec<FlagCode> = collect_flag_codes(entry, flag_codes);
+        for code in codes {
+            if code.0 >= 100 {
+                continue;
+            }
+            if !used_flags.contains(&code) {
+                used_flags.push(code);
+            }
+        }
+    }
+    used_flags.sort_by_key(|code| code.0);
+    used_flags
+}
+
+pub(crate) fn get_sorted_affixes(affixes: &HashMap<String, Affix>) -> Vec<(&String, &Affix)> {
     let mut vec_affix: Vec<(&String, &Affix)> = affixes.iter().collect();
     vec_affix.sort_by_key(|x| x.0);
     vec_affix

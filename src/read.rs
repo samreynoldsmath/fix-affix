@@ -101,7 +101,7 @@ fn bool_true() -> bool {
     true
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub(crate) struct FlagCode(pub u16);
 impl Display for FlagCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
