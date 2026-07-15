@@ -54,7 +54,7 @@ pub(crate) struct DictMetadata {
     pub(crate) authors: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Replace {
     pub(crate) remove: String,
