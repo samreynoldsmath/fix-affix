@@ -166,7 +166,14 @@ fn build_affix_rules_string(
         };
         content += &format!("\n{} {} {} {}\n", affix_str, code, cross_prod, num_rules);
         for rule in &afx.rules {
-            content += &build_single_affix_rule_string(rule, flag_codes, affix_str, code);
+            content += &build_single_affix_rule_string(
+                rule,
+                flag_codes,
+                affix_str,
+                code,
+                afx.substandard,
+                afx.circum_fix,
+            );
         }
     }
     content
@@ -177,6 +184,8 @@ fn build_single_affix_rule_string(
     flag_codes: &FlagCodeLookup,
     affix_str: &str,
     code: FlagCode,
+    substandard: bool,
+    circum_fix: bool,
 ) -> String {
     let strip: &str = match &rule.strip {
         Some(s) => s,
@@ -186,34 +195,41 @@ fn build_single_affix_rule_string(
         Some(s) => s,
         None => ".",
     };
-    let stacks: &Vec<String> = match &rule.stack {
-        Some(stacks) => stacks,
-        None => &vec![],
+    let mut affix_flags: Vec<String> = match &rule.stack {
+        Some(stacks) => stacks.clone(),
+        None => vec![],
     };
+    if substandard {
+        affix_flags.push("substandard".to_string());
+    }
+    if circum_fix {
+        affix_flags.push("circum_fix".to_string());
+    }
+    affix_flags.sort();
     let mut content: String = format!("{} {}   {} {}", affix_str, code, strip, &rule.add);
-    content += &build_stacks_string(stacks, flag_codes);
+    content += &build_affix_flag_string(&affix_flags, flag_codes);
     content += &format!(" {}\n", cond);
     content
 }
 
-fn build_stacks_string(stacks: &[String], flag_codes: &FlagCodeLookup) -> String {
-    if stacks.is_empty() {
+fn build_affix_flag_string(affix_flags: &[String], flag_codes: &FlagCodeLookup) -> String {
+    if affix_flags.is_empty() {
         return "".to_string();
     }
-    let mut content = "/".to_string();
-    for stack_rule in stacks.iter().take(stacks.len() - 1) {
-        if !flag_codes.contains_key(stack_rule) {
-            panic!("No flag code for {}", stack_rule);
+    let mut content: String = "/".to_string();
+    for flag in affix_flags.iter().take(affix_flags.len() - 1) {
+        if !flag_codes.contains_key(flag) {
+            panic!("No flag code for {}", flag);
         }
-        let stack_code: FlagCode = flag_codes[stack_rule];
-        content += &format!("{},", stack_code)
+        let code: FlagCode = flag_codes[flag];
+        content += &format!("{},", code)
     }
-    if let Some(stack_rule) = stacks.last() {
-        if !flag_codes.contains_key(stack_rule) {
-            panic!("No flag code for {}", stack_rule);
+    if let Some(flag) = affix_flags.last() {
+        if !flag_codes.contains_key(flag) {
+            panic!("No flag code for {}", flag);
         }
-        let stack_code: FlagCode = flag_codes[stack_rule];
-        content += &format!("{}", stack_code);
+        let code: FlagCode = flag_codes[flag];
+        content += &format!("{}", code);
     }
     content
 }

@@ -74,6 +74,7 @@ pub(crate) struct DictEntry {
     pub(crate) keep_case: bool,
     pub(crate) need_affix: bool,
     pub(crate) substandard: bool,
+    pub(crate) circum_fix: bool,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -91,9 +92,7 @@ pub(crate) struct Affix {
     pub(crate) rules: Vec<CondReplace>,
     #[serde(default = "bool_true")]
     pub(crate) cross_product: bool,
-    #[allow(dead_code)] // TODO
     pub(crate) circum_fix: bool,
-    #[allow(dead_code)] // TODO
     pub(crate) substandard: bool,
 }
 

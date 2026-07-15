@@ -51,9 +51,8 @@ pub(crate) fn build_flag_code_look_up(
     flag_codes.insert("{forbidden_word}".to_string(), FlagCode(9));
     flag_codes.insert("{keep_case}".to_string(), FlagCode(10));
     flag_codes.insert("{need_affix}".to_string(), FlagCode(11));
-    flag_codes.insert("{substandard_stem}".to_string(), FlagCode(12));
+    flag_codes.insert("{substandard}".to_string(), FlagCode(12));
     flag_codes.insert("{circum_fix}".to_string(), FlagCode(13));
-    flag_codes.insert("{substandard_affix}".to_string(), FlagCode(14));
 
     let prefix_start: u16 = 100;
     for (i, p) in (prefix_start..).zip(prefixes) {
@@ -108,6 +107,9 @@ pub(crate) fn collect_flag_codes(entry: &DictEntry, flag_codes: &FlagCodeLookup)
     }
     if entry.substandard {
         entry_codes.push(FlagCode(12));
+    }
+    if entry.circum_fix {
+        entry_codes.push(FlagCode(13));
     }
 
     for p in &entry.prefix {
