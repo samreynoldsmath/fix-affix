@@ -1,4 +1,4 @@
-use crate::{Affix, DictEntry, FlagCode, FlagCodeLookup, TomlDict};
+use crate::{Affix, DictEntry, FlagCode, FlagCodeLookup};
 use anyhow::Result;
 use std::collections::HashMap;
 
@@ -9,16 +9,10 @@ pub fn get_sorted_affixes(affixes: &HashMap<String, Affix>) -> Vec<(&String, &Af
     vec_affix
 }
 
-pub(crate) fn build_flag_code_look_up(dict: &TomlDict) -> Result<FlagCodeLookup> {
-    let prefixes = match &dict.prefix {
-        Some(x) => get_sorted_affixes(x),
-        None => vec![],
-    };
-    let suffixes = match &dict.suffix {
-        Some(x) => get_sorted_affixes(x),
-        None => vec![],
-    };
-
+pub(crate) fn build_flag_code_look_up(
+    prefixes: &Vec<(&String, &Affix)>,
+    suffixes: &Vec<(&String, &Affix)>,
+) -> Result<FlagCodeLookup> {
     let k: usize = prefixes.len();
 
     let total_num_flags: usize = 100 + k + suffixes.len();

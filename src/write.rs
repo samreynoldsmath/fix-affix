@@ -4,21 +4,29 @@ use crate::{
 };
 use anyhow::Result;
 use chrono::prelude::{Local, Utc};
-use std::{collections::HashMap, fs, path::Path};
+use std::{fs, path::Path};
 
 const DATE_FMT: &str = "%Y-%m-%d %H:%M";
 const REPO_URL: &str = "https://github.com/samreynoldsmath/fix-affix";
 
 pub fn build_hunspell_dictionary(dict: &TomlDict, aff_file: &Path, dic_file: &Path) -> Result<()> {
-    let flag_codes: FlagCodeLookup = build_flag_code_look_up(dict)?;
-    let dic: String = build_dic(dict, &flag_codes)?;
-    let aff: String = build_aff(dict, &flag_codes)?;
+    let prefixes: Vec<(&String, &Affix)> = match &dict.prefix {
+        Some(x) => get_sorted_affixes(x),
+        None => vec![],
+    };
+    let suffixes: Vec<(&String, &Affix)> = match &dict.suffix {
+        Some(x) => get_sorted_affixes(x),
+        None => vec![],
+    };
+    let flag_codes: FlagCodeLookup = build_flag_code_look_up(&prefixes, &suffixes)?;
+    let dic: String = build_dic_string(dict, &flag_codes);
+    let aff: String = build_aff_string(prefixes, suffixes, dict, &flag_codes);
     fs::write(dic_file, dic)?;
     fs::write(aff_file, aff)?;
     Ok(())
 }
 
-fn build_dic(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> Result<String> {
+fn build_dic_string(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> String {
     let entries: Vec<DictEntry> = match &dict.entry {
         Some(x) => x.to_vec(),
         None => vec![],
@@ -39,27 +47,24 @@ fn build_dic(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> Result<String> {
             content += &format!("{}\n", code);
         }
     }
-    Ok(content)
+    content
 }
 
-fn build_aff(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> Result<String> {
-    let mut content: String = write_aff_header(dict);
-    content += &write_aff_preamble(dict);
-    content += &write_flag_keys();
-    let prefixes = match &dict.prefix {
-        Some(x) => x.clone(), // TODO: unnecessary cloning
-        None => HashMap::new(),
-    };
-    let suffixes: HashMap<String, Affix> = match &dict.suffix {
-        Some(x) => x.clone(), // TODO: unnecessary cloning
-        None => HashMap::new(),
-    };
-    content += &write_affix_rules(&prefixes, "PFX", flag_codes);
-    content += &write_affix_rules(&suffixes, "SFX", flag_codes);
-    Ok(content)
+fn build_aff_string(
+    prefixes: Vec<(&String, &Affix)>,
+    suffixes: Vec<(&String, &Affix)>,
+    dict: &TomlDict,
+    flag_codes: &FlagCodeLookup,
+) -> String {
+    let mut content: String = build_aff_header(dict);
+    content += &build_aff_preamble_string(dict);
+    content += &build_flag_keys_string();
+    content += &build_affix_rules_string(prefixes, "PFX", flag_codes);
+    content += &build_affix_rules_string(suffixes, "SFX", flag_codes);
+    content
 }
 
-fn write_aff_header(dict: &TomlDict) -> String {
+fn build_aff_header(dict: &TomlDict) -> String {
     let now: String = Local::now().format(DATE_FMT).to_string();
     let utc: String = Utc::now().format(DATE_FMT).to_string();
 
@@ -77,7 +82,7 @@ fn write_aff_header(dict: &TomlDict) -> String {
     content
 }
 
-fn write_aff_preamble(dict: &TomlDict) -> String {
+fn build_aff_preamble_string(dict: &TomlDict) -> String {
     let config = match &dict.config {
         Some(config) => config,
         _ => return "".to_string(),
@@ -130,7 +135,7 @@ fn write_aff_preamble(dict: &TomlDict) -> String {
     content
 }
 
-fn write_flag_keys() -> String {
+fn build_flag_keys_string() -> String {
     "NOSUGGEST 0
 WARN 1
 FORBIDWARN 2
@@ -149,21 +154,16 @@ CIRCUMFIX 13
     .to_string()
 }
 
-fn write_affix_rules(
-    affixes: &HashMap<String, Affix>,
+fn build_affix_rules_string(
+    affixes: Vec<(&String, &Affix)>,
     affix_str: &str,
     flag_codes: &FlagCodeLookup,
 ) -> String {
     let mut content: String = "".to_string();
-    // TODO: vectorization should only happen once
-    let vec_affix: Vec<(&String, &Affix)> = get_sorted_affixes(affixes);
-    for (a, afx) in vec_affix {
+    for (a, afx) in affixes {
         let num_rules: usize = afx.rules.len();
         if num_rules == 0 {
             continue;
-        }
-        if !flag_codes.contains_key(a) {
-            panic!("No flag code for {}", a);
         }
         let code: FlagCode = flag_codes[a];
         let cross_prod: &str = match afx.cross_product {
@@ -172,13 +172,13 @@ fn write_affix_rules(
         };
         content += &format!("\n{} {} {} {}\n", affix_str, code, cross_prod, num_rules);
         for rule in &afx.rules {
-            content += &write_rule(rule, flag_codes, affix_str, code);
+            content += &build_single_affix_rule_string(rule, flag_codes, affix_str, code);
         }
     }
     content
 }
 
-fn write_rule(
+fn build_single_affix_rule_string(
     rule: &CondReplace,
     flag_codes: &FlagCodeLookup,
     affix_str: &str,
@@ -197,12 +197,12 @@ fn write_rule(
         None => &vec![],
     };
     let mut content: String = format!("{} {}   {} {}", affix_str, code, strip, &rule.add);
-    content += &write_stacks(stacks, flag_codes);
+    content += &build_stacks_string(stacks, flag_codes);
     content += &format!(" {}\n", cond);
     content
 }
 
-fn write_stacks(stacks: &[String], flag_codes: &FlagCodeLookup) -> String {
+fn build_stacks_string(stacks: &[String], flag_codes: &FlagCodeLookup) -> String {
     if stacks.is_empty() {
         return "".to_string();
     }
