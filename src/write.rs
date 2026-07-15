@@ -176,20 +176,15 @@ fn write_affix_rules(
                 Some(s) => s,
                 None => "0",
             };
-            let add: &str = match &rule.add {
-                // TODO shouldn't be optional
+            let cond: &str = match &rule.cond {
                 Some(s) => s,
-                None => "0",
+                None => ".",
             };
             let stacks: &Vec<String> = match &rule.stack {
                 Some(stacks) => stacks,
                 None => &vec![],
             };
-            let cond: &str = match &rule.cond {
-                Some(s) => s,
-                None => ".",
-            };
-            content += &format!("{} {}   {} {}", affix_str, code, strip, add);
+            content += &format!("{} {}   {} {}", affix_str, code, strip, &rule.add);
             if !stacks.is_empty() {
                 content += "/";
                 for stack_rule in stacks.iter().take(stacks.len() - 1) {

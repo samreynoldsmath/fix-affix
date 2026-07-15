@@ -98,8 +98,8 @@ pub(crate) struct DictEntry {
 #[derive(Debug, Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct CondReplace {
+    pub(crate) add: String,
     pub(crate) strip: Option<String>,
-    pub(crate) add: Option<String>,
     pub(crate) cond: Option<String>,
     pub(crate) stack: Option<Vec<String>>,
 }
