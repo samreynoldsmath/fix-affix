@@ -1,9 +1,11 @@
 [metadata]
 title = "ex_dict"
 description = "Example Dictionary"
-version = "0.1.0"
-date = 2026-07-09
-authors = ["Sam Reynolds (github.com/samreynoldsmath)"]
+version = "1.2.3"
+authors = [
+    "Mickey Mouse (mickey@example.com)",
+    "Donald Duck (github.com/donald_duck)",
+]
 
 [config]
 encoding = "UTF-8"
@@ -56,7 +58,7 @@ suffix = ["ive"]
 
 # This is will generate the following files in the conventional Hunspell format
 # (with possibly different flag labels):
-# 
+#
 #
 # ex_dict.aff
 # -----------
@@ -78,14 +80,14 @@ suffix = ["ive"]
 # SFX V Y 2
 # SFX V   e     ive        e
 # SFX V   0     ive        [^e]
-# 
+#
 # SFX M N 1
 # SFX M   0     's         .
 #
 # REP 2
 # REP ie ai
 # REP alot a_lot
-# 
+#
 #
 # ex_dict.dic
 # -----------
@@ -93,4 +95,4 @@ suffix = ["ive"]
 # Sam/$M
 # act/AV
 # dismiss/!V
-# 
+#
