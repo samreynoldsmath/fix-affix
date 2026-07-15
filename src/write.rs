@@ -1,6 +1,6 @@
 use crate::{
     Affix, DictEntry, FlagCode, FlagCodeLookup, TomlDict, VERSION, build_flag_code_look_up,
-    collect_flag_codes, get_sorted_affixes,
+    collect_flag_codes, get_sorted_affixes, read::CondReplace,
 };
 use anyhow::Result;
 use chrono::prelude::{Local, Utc};
@@ -172,38 +172,54 @@ fn write_affix_rules(
         };
         content += &format!("\n{} {} {} {}\n", affix_str, code, cross_prod, num_rules);
         for rule in &afx.rules {
-            let strip: &str = match &rule.strip {
-                Some(s) => s,
-                None => "0",
-            };
-            let cond: &str = match &rule.cond {
-                Some(s) => s,
-                None => ".",
-            };
-            let stacks: &Vec<String> = match &rule.stack {
-                Some(stacks) => stacks,
-                None => &vec![],
-            };
-            content += &format!("{} {}   {} {}", affix_str, code, strip, &rule.add);
-            if !stacks.is_empty() {
-                content += "/";
-                for stack_rule in stacks.iter().take(stacks.len() - 1) {
-                    if !flag_codes.contains_key(stack_rule) {
-                        panic!("No flag code for {}", stack_rule);
-                    }
-                    let stack_code: FlagCode = flag_codes[stack_rule];
-                    content += &format!("{},", stack_code)
-                }
-                if let Some(stack_rule) = stacks.last() {
-                    if !flag_codes.contains_key(stack_rule) {
-                        panic!("No flag code for {}", stack_rule);
-                    }
-                    let stack_code: FlagCode = flag_codes[stack_rule];
-                    content += &format!("{}", stack_code);
-                }
-            }
-            content += &format!(" {}\n", cond);
+            content += &write_rule(rule, flag_codes, affix_str, code);
         }
+    }
+    content
+}
+
+fn write_rule(
+    rule: &CondReplace,
+    flag_codes: &FlagCodeLookup,
+    affix_str: &str,
+    code: FlagCode,
+) -> String {
+    let strip: &str = match &rule.strip {
+        Some(s) => s,
+        None => "0",
+    };
+    let cond: &str = match &rule.cond {
+        Some(s) => s,
+        None => ".",
+    };
+    let stacks: &Vec<String> = match &rule.stack {
+        Some(stacks) => stacks,
+        None => &vec![],
+    };
+    let mut content: String = format!("{} {}   {} {}", affix_str, code, strip, &rule.add);
+    content += &write_stacks(stacks, flag_codes);
+    content += &format!(" {}\n", cond);
+    content
+}
+
+fn write_stacks(stacks: &[String], flag_codes: &FlagCodeLookup) -> String {
+    if stacks.is_empty() {
+        return "".to_string();
+    }
+    let mut content = "/".to_string();
+    for stack_rule in stacks.iter().take(stacks.len() - 1) {
+        if !flag_codes.contains_key(stack_rule) {
+            panic!("No flag code for {}", stack_rule);
+        }
+        let stack_code: FlagCode = flag_codes[stack_rule];
+        content += &format!("{},", stack_code)
+    }
+    if let Some(stack_rule) = stacks.last() {
+        if !flag_codes.contains_key(stack_rule) {
+            panic!("No flag code for {}", stack_rule);
+        }
+        let stack_code: FlagCode = flag_codes[stack_rule];
+        content += &format!("{}", stack_code);
     }
     content
 }
