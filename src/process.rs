@@ -1,9 +1,8 @@
 use crate::{Affix, DictEntry, FlagCode, FlagCodeLookup};
-use anyhow::Result;
+use anyhow::{Error, Result};
 use std::collections::HashMap;
 
 pub fn get_sorted_affixes(affixes: &HashMap<String, Affix>) -> Vec<(&String, &Affix)> {
-    // TODO: this should only be done once
     let mut vec_affix: Vec<(&String, &Affix)> = affixes.iter().collect();
     vec_affix.sort_by_key(|x| x.0);
     vec_affix
@@ -17,8 +16,8 @@ pub(crate) fn build_flag_code_look_up(
 
     let total_num_flags: usize = 100 + k + suffixes.len();
     if total_num_flags > 65_000 {
-        let msg: &str = "Total number of flags cannot exceed 65,000";
-        todo!("{}", msg); // TODO: proper error handling
+        let e: Error = Error::msg("Total number of flags cannot exceed 65,000");
+        return Err(e);
     }
 
     let mut flag_codes: FlagCodeLookup = HashMap::new();
