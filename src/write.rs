@@ -11,31 +11,21 @@ const DATE_FMT: &str = "%Y-%m-%d %H:%M";
 const REPO_URL: &str = "https://github.com/samreynoldsmath/fix-affix";
 
 pub fn build_hunspell_dictionary(dict: &TomlDict, aff_file: &Path, dic_file: &Path) -> Result<()> {
-    let prefixes: Vec<(&String, &Affix)> = match &dict.prefix {
-        Some(x) => get_sorted_affixes(x),
-        None => vec![],
-    };
-    let suffixes: Vec<(&String, &Affix)> = match &dict.suffix {
-        Some(x) => get_sorted_affixes(x),
-        None => vec![],
-    };
+    let prefixes: Vec<(&String, &Affix)> = get_sorted_affixes(&dict.prefix);
+    let suffixes: Vec<(&String, &Affix)> = get_sorted_affixes(&dict.suffix);
     let flag_codes: FlagCodeLookup = build_flag_code_look_up(&prefixes, &suffixes)?;
-    let dic: String = build_dic_string(dict, &flag_codes);
+    let dic: String = build_dic_string(&dict.entry, &flag_codes);
     let aff: String = build_aff_string(prefixes, suffixes, dict, &flag_codes);
     fs::write(dic_file, dic)?;
     fs::write(aff_file, aff)?;
     Ok(())
 }
 
-fn build_dic_string(dict: &TomlDict, flag_codes: &FlagCodeLookup) -> String {
-    let entries: Vec<DictEntry> = match &dict.entry {
-        Some(x) => x.to_vec(),
-        None => vec![],
-    };
+fn build_dic_string(entries: &Vec<DictEntry>, flag_codes: &FlagCodeLookup) -> String {
     let mut content: String = format!("{}\n", entries.len());
     for entry in entries {
         content += &entry.stem;
-        let entry_codes: Vec<FlagCode> = collect_flag_codes(&entry, flag_codes);
+        let entry_codes: Vec<FlagCode> = collect_flag_codes(entry, flag_codes);
         if entry_codes.is_empty() {
             content += "\n";
             continue;
@@ -85,48 +75,44 @@ fn build_aff_header(dict: &TomlDict) -> String {
 }
 
 fn build_aff_preamble_string(dict: &TomlDict) -> String {
-    let config = match &dict.config {
-        Some(config) => config,
-        _ => return "".to_string(),
-    };
     let mut content: String = "FLAG num\n".to_string();
-    if let Some(encoding) = &config.encoding {
+    if let Some(encoding) = &dict.config.encoding {
         content += &format!("SET {}\n", encoding);
     };
-    if let Some(word_char) = &config.additional_word_characters {
+    if let Some(word_char) = &dict.config.additional_word_characters {
         content += &format!("WORDCHARS {}\n", word_char);
     };
-    if config.complex_prefixes {
+    if dict.config.complex_prefixes {
         content += "COMPLEXPREFIXES\n"
     }
-    if let Some(language_code) = &config.language_code {
+    if let Some(language_code) = &dict.config.language_code {
         content += &format!("LANG {}\n", language_code);
     }
-    if let Some(ignore_characters) = &config.ignore_characters {
+    if let Some(ignore_characters) = &dict.config.ignore_characters {
         content += &format!("IGNORE {}\n", ignore_characters);
     }
-    if let Some(try_characters) = &config.try_characters {
+    if let Some(try_characters) = &dict.config.try_characters {
         content += &format!("TRY {}\n", try_characters);
     }
-    if let Some(max_compound_suggestions) = &config.max_compound_suggestions {
+    if let Some(max_compound_suggestions) = &dict.config.max_compound_suggestions {
         content += &format!("MAXCPDSUGS {}\n", max_compound_suggestions);
     }
-    if let Some(max_n_gram_suggestions) = &config.max_n_gram_suggestions {
+    if let Some(max_n_gram_suggestions) = &dict.config.max_n_gram_suggestions {
         content += &format!("MAXNGRAMSUGS {}\n", max_n_gram_suggestions);
     }
-    if let Some(max_diff) = &config.max_diff {
+    if let Some(max_diff) = &dict.config.max_diff {
         content += &format!("MAXDIFF {}\n", max_diff);
     }
-    if config.only_max_diff {
+    if dict.config.only_max_diff {
         content += "ONLYMAXDIFF\n";
     }
-    if config.no_split_suggestions {
+    if dict.config.no_split_suggestions {
         content += "NOSPLITSUGS\n";
     }
-    if config.suggest_with_dots {
+    if dict.config.suggest_with_dots {
         content += "SUGSWITHDOTS\n";
     }
-    if let Some(input_conversion) = &config.input_conversion
+    if let Some(input_conversion) = &dict.config.input_conversion
         && !input_conversion.is_empty()
     {
         content += &format!("ICONV {}\n", input_conversion.len());
@@ -226,8 +212,7 @@ fn build_stacks_string(stacks: &[String], flag_codes: &FlagCodeLookup) -> String
     content
 }
 
-fn build_replacements_string(opt_reps: Option<Vec<Replace>>) -> String {
-    let reps: Vec<Replace> = opt_reps.unwrap_or_default();
+fn build_replacements_string(reps: Vec<Replace>) -> String {
     if reps.is_empty() {
         return "".to_string();
     }

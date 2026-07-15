@@ -10,23 +10,22 @@ pub fn load_toml_dict(path: &Path) -> Result<TomlDict> {
     Ok(dict)
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields, default)]
 pub struct TomlDict {
     pub(crate) metadata: DictMetadata,
-    pub(crate) config: Option<DictConfig>,
-    pub(crate) prefix: Option<HashMap<String, Affix>>,
-    pub(crate) suffix: Option<HashMap<String, Affix>>,
-    pub(crate) replace: Option<Vec<Replace>>,
-    pub(crate) entry: Option<Vec<DictEntry>>,
+    pub(crate) config: DictConfig,
+    pub(crate) prefix: HashMap<String, Affix>,
+    pub(crate) suffix: HashMap<String, Affix>,
+    pub(crate) replace: Vec<Replace>,
+    pub(crate) entry: Vec<DictEntry>,
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields, default)]
 pub(crate) struct DictConfig {
     pub(crate) encoding: Option<String>,
     pub(crate) additional_word_characters: Option<String>,
-    #[serde(default)]
     pub(crate) complex_prefixes: bool,
     pub(crate) language_code: Option<String>,
     pub(crate) ignore_characters: Option<String>,
@@ -34,19 +33,15 @@ pub(crate) struct DictConfig {
     pub(crate) max_compound_suggestions: Option<u8>,
     pub(crate) max_n_gram_suggestions: Option<u8>,
     pub(crate) max_diff: Option<u8>,
-    #[serde(default)]
     pub(crate) only_max_diff: bool,
-    #[serde(default)]
     pub(crate) no_split_suggestions: bool,
-    #[serde(default)]
     pub(crate) suggest_with_dots: bool,
     pub(crate) input_conversion: Option<Vec<Replace>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct DictMetadata {
-    // TODO make fields optional
     pub(crate) title: String,
     pub(crate) description: String,
     pub(crate) version: String,
@@ -90,18 +85,15 @@ pub(crate) struct CondReplace {
     pub(crate) stack: Option<Vec<String>>,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug, Default, Deserialize, Clone)]
+#[serde(deny_unknown_fields, default)]
 pub(crate) struct Affix {
     pub(crate) rules: Vec<CondReplace>,
-    #[serde(default)]
     pub(crate) cross_product: bool,
-    #[serde(default)]
-    #[allow(dead_code)]
-    pub(crate) circum_fix: bool, // TODO
-    #[serde(default)]
-    #[allow(dead_code)]
-    pub(crate) substandard: bool, // TODO
+    #[allow(dead_code)] // TODO
+    pub(crate) circum_fix: bool,
+    #[allow(dead_code)] // TODO
+    pub(crate) substandard: bool,
 }
 
 #[derive(Clone, Copy)]
