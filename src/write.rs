@@ -1,6 +1,7 @@
 use crate::{
     Affix, DictEntry, FlagCode, FlagCodeLookup, TomlDict, VERSION, build_flag_code_look_up,
-    collect_flag_codes, get_sorted_affixes, read::CondReplace,
+    collect_flag_codes, get_sorted_affixes,
+    read::{CondReplace, Replace},
 };
 use anyhow::Result;
 use chrono::prelude::{Local, Utc};
@@ -61,6 +62,7 @@ fn build_aff_string(
     content += &build_flag_keys_string();
     content += &build_affix_rules_string(prefixes, "PFX", flag_codes);
     content += &build_affix_rules_string(suffixes, "SFX", flag_codes);
+    content += &build_replacements_string(dict.replace.clone());
     content
 }
 
@@ -220,6 +222,21 @@ fn build_stacks_string(stacks: &[String], flag_codes: &FlagCodeLookup) -> String
         }
         let stack_code: FlagCode = flag_codes[stack_rule];
         content += &format!("{}", stack_code);
+    }
+    content
+}
+
+fn build_replacements_string(opt_reps: Option<Vec<Replace>>) -> String {
+    let reps: Vec<Replace> = opt_reps.unwrap_or_default();
+    if reps.is_empty() {
+        return "".to_string();
+    }
+    let num_reps: usize = reps.len();
+    let mut content: String = format!("\nREP {}\n", num_reps);
+    for r in reps {
+        let rm: String = r.remove.replace(" ", "_");
+        let add: String = r.add.replace(" ", "_");
+        content += &format!("REP {} {}\n", rm, add);
     }
     content
 }

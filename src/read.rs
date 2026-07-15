@@ -17,8 +17,7 @@ pub struct TomlDict {
     pub(crate) config: Option<DictConfig>,
     pub(crate) prefix: Option<HashMap<String, Affix>>,
     pub(crate) suffix: Option<HashMap<String, Affix>>,
-    #[allow(dead_code)]
-    pub(crate) replace: Option<Vec<Replace>>, // TODO
+    pub(crate) replace: Option<Vec<Replace>>,
     pub(crate) entry: Option<Vec<DictEntry>>,
 }
 
