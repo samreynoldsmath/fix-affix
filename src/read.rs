@@ -24,19 +24,19 @@ pub struct TomlDict {
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields, default)]
 pub(crate) struct DictConfig {
-    pub(crate) encoding: Option<String>,
-    pub(crate) additional_word_characters: Option<String>,
+    pub(crate) encoding: String,
+    pub(crate) additional_word_characters: String,
     pub(crate) complex_prefixes: bool,
-    pub(crate) language_code: Option<String>,
-    pub(crate) ignore_characters: Option<String>,
-    pub(crate) try_characters: Option<String>,
-    pub(crate) max_compound_suggestions: Option<u8>,
-    pub(crate) max_n_gram_suggestions: Option<u8>,
-    pub(crate) max_diff: Option<u8>,
+    pub(crate) language_code: String,
+    pub(crate) ignore_characters: String,
+    pub(crate) try_characters: String,
+    pub(crate) max_compound_suggestions: u8,
+    pub(crate) max_n_gram_suggestions: u8,
+    pub(crate) max_diff: u8,
     pub(crate) only_max_diff: bool,
     pub(crate) no_split_suggestions: bool,
     pub(crate) suggest_with_dots: bool,
-    pub(crate) input_conversion: Option<Vec<Replace>>,
+    pub(crate) input_conversion: Vec<Replace>,
 }
 
 #[derive(Debug, Default, Deserialize)]

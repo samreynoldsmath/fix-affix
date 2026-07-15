@@ -76,32 +76,32 @@ fn build_aff_header(dict: &TomlDict) -> String {
 
 fn build_aff_preamble_string(dict: &TomlDict) -> String {
     let mut content: String = "FLAG num\n".to_string();
-    if let Some(encoding) = &dict.config.encoding {
-        content += &format!("SET {}\n", encoding);
+    if !dict.config.encoding.is_empty() {
+        content += &format!("SET {}\n", dict.config.encoding);
     };
-    if let Some(word_char) = &dict.config.additional_word_characters {
-        content += &format!("WORDCHARS {}\n", word_char);
+    if !dict.config.additional_word_characters.is_empty() {
+        content += &format!("WORDCHARS {}\n", dict.config.additional_word_characters);
     };
     if dict.config.complex_prefixes {
         content += "COMPLEXPREFIXES\n"
     }
-    if let Some(language_code) = &dict.config.language_code {
-        content += &format!("LANG {}\n", language_code);
+    if !dict.config.language_code.is_empty() {
+        content += &format!("LANG {}\n", dict.config.language_code);
     }
-    if let Some(ignore_characters) = &dict.config.ignore_characters {
-        content += &format!("IGNORE {}\n", ignore_characters);
+    if !dict.config.ignore_characters.is_empty() {
+        content += &format!("IGNORE {}\n", dict.config.ignore_characters);
     }
-    if let Some(try_characters) = &dict.config.try_characters {
-        content += &format!("TRY {}\n", try_characters);
+    if !dict.config.try_characters.is_empty() {
+        content += &format!("TRY {}\n", dict.config.try_characters);
     }
-    if let Some(max_compound_suggestions) = &dict.config.max_compound_suggestions {
-        content += &format!("MAXCPDSUGS {}\n", max_compound_suggestions);
+    if dict.config.max_compound_suggestions > 0 {
+        content += &format!("MAXCPDSUGS {}\n", dict.config.max_compound_suggestions);
     }
-    if let Some(max_n_gram_suggestions) = &dict.config.max_n_gram_suggestions {
-        content += &format!("MAXNGRAMSUGS {}\n", max_n_gram_suggestions);
+    if dict.config.max_n_gram_suggestions > 0 {
+        content += &format!("MAXNGRAMSUGS {}\n", dict.config.max_n_gram_suggestions);
     }
-    if let Some(max_diff) = &dict.config.max_diff {
-        content += &format!("MAXDIFF {}\n", max_diff);
+    if dict.config.max_diff > 0 {
+        content += &format!("MAXDIFF {}\n", dict.config.max_diff);
     }
     if dict.config.only_max_diff {
         content += "ONLYMAXDIFF\n";
@@ -112,11 +112,9 @@ fn build_aff_preamble_string(dict: &TomlDict) -> String {
     if dict.config.suggest_with_dots {
         content += "SUGSWITHDOTS\n";
     }
-    if let Some(input_conversion) = &dict.config.input_conversion
-        && !input_conversion.is_empty()
-    {
-        content += &format!("ICONV {}\n", input_conversion.len());
-        for iconv in input_conversion {
+    if !dict.config.input_conversion.is_empty() {
+        content += &format!("ICONV {}\n", dict.config.input_conversion.len());
+        for iconv in &dict.config.input_conversion {
             content += &format!("ICONV {} {}\n", iconv.remove, iconv.add);
         }
     }
