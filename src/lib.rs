@@ -9,3 +9,5 @@ pub use read::TomlDict;
 pub use read::load_toml_dict;
 use read::{Affix, DictEntry, FlagCode, FlagCodeLookup};
 pub use write::build_hunspell_dictionary;
+
+const VERSION: &str = "0.1.0";
