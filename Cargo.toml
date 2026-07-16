@@ -2,6 +2,21 @@
 name = "fix-affix"
 version = "0.1.0"
 edition = "2024"
+authors = ["Sam Reynolds"]
+description = "Build a Hunspell dictionary via TOML"
+repository = "https://github.com/samreynoldsmath/fix-affix"
+license = "MIT"
+keywords = [
+    "hunspell",
+    "toml",
+    "dic",
+    "aff",
+    "spelling",
+    "spell check",
+]
+categories = ["command-line-utilities"]
+exclude = ["scripts/", ".git*"]
+
 
 [dependencies]
 anyhow = "1.0.103"
