@@ -2,3 +2,6 @@
 /.vscode
 *.aff
 *.dic
+src/.rust*
+src/doc
+src/debug
