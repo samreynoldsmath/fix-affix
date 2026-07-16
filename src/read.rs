@@ -4,21 +4,37 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::path::Path;
 
-pub fn load_toml_dict(path: &Path) -> Result<TomlDict> {
-    let raw: String = std::fs::read_to_string(path)?;
-    let dict: TomlDict = toml::from_str(&raw)?;
-    Ok(dict)
-}
-
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields, default)]
-pub struct TomlDict {
+pub struct HunspellDict {
     pub(crate) metadata: DictMetadata,
     pub(crate) config: DictConfig,
     pub(crate) prefix: HashMap<String, Affix>,
     pub(crate) suffix: HashMap<String, Affix>,
     pub(crate) replace: Vec<Replace>,
     pub(crate) entry: Vec<DictEntry>,
+    #[serde(skip)]
+    pub(crate) derived: DerivedDictData,
+}
+
+impl HunspellDict {
+    pub fn load_from_toml_string(data: &str) -> Result<Self> {
+        let mut dict: HunspellDict = toml::from_str(data)?;
+        dict.compute_derived_data()?;
+        Ok(dict)
+    }
+
+    pub fn load_from_toml_file(path: &Path) -> Result<HunspellDict> {
+        let data: String = std::fs::read_to_string(path)?;
+        Self::load_from_toml_string(&data)
+    }
+}
+
+#[derive(Debug, Default)]
+pub(crate) struct DerivedDictData {
+    pub(crate) sorted_prefix: Vec<String>,
+    pub(crate) sorted_suffix: Vec<String>,
+    pub(crate) flag_codes: HashMap<String, FlagCode>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -88,7 +104,7 @@ pub(crate) struct CondReplace {
 
 #[derive(Debug, Default, Deserialize, Clone)]
 #[serde(deny_unknown_fields, default)]
-pub(crate) struct Affix {
+pub struct Affix {
     pub(crate) rules: Vec<CondReplace>,
     #[serde(default = "bool_true")]
     pub(crate) cross_product: bool,
@@ -100,12 +116,10 @@ fn bool_true() -> bool {
     true
 }
 
-#[derive(Clone, Copy, PartialEq)]
-pub(crate) struct FlagCode(pub u16);
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq)]
+pub struct FlagCode(pub u16);
 impl Display for FlagCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
-
-pub(crate) type FlagCodeLookup = HashMap<String, FlagCode>;
