@@ -1,9 +1,10 @@
-mod context;
+#![warn(missing_docs)]
+#![doc = include_str!("../README.md")]
+
 mod process;
 mod read;
 mod write;
 
-pub use context::ContextManager;
 pub use read::HunspellDict;
 use read::{Affix, CondReplace, DerivedDictData, DictConfig, DictEntry, FlagCode};
 

@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::path::Path;
 
+/// Contains the Hunspell library data
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields, default)]
 pub struct HunspellDict {
@@ -18,12 +19,14 @@ pub struct HunspellDict {
 }
 
 impl HunspellDict {
-    pub fn load_from_toml_string(data: &str) -> Result<Self> {
+    /// Loads dictionary from a TOML formatted string
+    pub fn load_from_toml_string(data: &str) -> Result<HunspellDict> {
         let mut dict: HunspellDict = toml::from_str(data)?;
         dict.compute_derived_data()?;
         Ok(dict)
     }
 
+    /// Loads dictionary from a TOML file
     pub fn load_from_toml_file(path: &Path) -> Result<HunspellDict> {
         let data: String = std::fs::read_to_string(path)?;
         Self::load_from_toml_string(&data)

@@ -11,18 +11,21 @@ enum AffixType {
 }
 
 impl HunspellDict {
+    /// Writes the .dic file
     pub fn write_dic_file(&self, dic_file: &Path) -> Result<()> {
         let dic: String = self.build_dic_string();
         fs::write(dic_file, dic)?;
         Ok(())
     }
 
+    /// Writes the .aff file
     pub fn write_aff_file(&self, aff_file: &Path) -> Result<()> {
         let aff: String = self.build_aff_string();
         fs::write(aff_file, aff)?;
         Ok(())
     }
 
+    /// Returns a string containing the contents of the .dic file
     pub fn build_dic_string(&self) -> String {
         let mut content: String = format!("{}\n", self.entry.len());
         for word in &self.entry {
@@ -43,6 +46,7 @@ impl HunspellDict {
         content
     }
 
+    /// Returns a string containing the contents of the .aff file
     pub fn build_aff_string(&self) -> String {
         let mut content: String = self.build_aff_header();
         content += &self.config.build_aff_preamble_string();
