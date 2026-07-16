@@ -15,8 +15,7 @@ keywords = [
     "spell check",
 ]
 categories = ["command-line-utilities"]
-exclude = ["scripts/", ".git*"]
-
+exclude = ["scripts/", ".git*", "examples/"]
 
 [dependencies]
 anyhow = "1.0.103"
