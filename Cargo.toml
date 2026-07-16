@@ -11,8 +11,7 @@ keywords = [
     "toml",
     "dic",
     "aff",
-    "spelling",
-    "spell check",
+    "spell",
 ]
 categories = ["command-line-utilities"]
 exclude = ["scripts/", ".git*", "examples/"]
