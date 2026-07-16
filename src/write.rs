@@ -1,15 +1,9 @@
-use crate::{
-    Affix, FlagCode, HunspellDict, VERSION,
-    process::get_used_flags,
-    read::{CondReplace, DictConfig, Replace},
-};
+use crate::{Affix, CondReplace, DerivedDictData, DictConfig, FlagCode, HunspellDict};
+use crate::{DATE_FMT, REPO_URL, VERSION};
 use anyhow::Result;
 use chrono::prelude::{Local, Utc};
 use std::collections::HashMap;
 use std::{fs, path::Path};
-
-const DATE_FMT: &str = "%Y-%m-%d %H:%M";
-const REPO_URL: &str = "https://github.com/samreynoldsmath/fix-affix";
 
 enum AffixType {
     Prefix,
@@ -50,14 +44,12 @@ impl HunspellDict {
     }
 
     pub fn build_aff_string(&self) -> String {
-        let used_flags: Vec<FlagCode> = get_used_flags(&self.entry, &self.derived.flag_codes);
-
         let mut content: String = self.build_aff_header();
         content += &self.config.build_aff_preamble_string();
-        content += &build_flag_keys_string(used_flags);
+        content += &self.derived.build_flag_keys_string();
         content += &self.build_affix_rules_string(AffixType::Prefix);
         content += &self.build_affix_rules_string(AffixType::Suffix);
-        content += &build_replacements_string(&self.replace);
+        content += &self.build_replacements_string();
         content
     }
 
@@ -108,6 +100,20 @@ impl HunspellDict {
                     afx.circum_fix,
                 );
             }
+        }
+        content
+    }
+
+    fn build_replacements_string(&self) -> String {
+        if self.replace.is_empty() {
+            return "".to_string();
+        }
+        let num_reps: usize = self.replace.len();
+        let mut content: String = format!("\nREP {}\n", num_reps);
+        for r in &self.replace {
+            let rm: String = r.remove.replace(" ", "_");
+            let add: String = r.add.replace(" ", "_");
+            content += &format!("REP {} {}\n", rm, add);
         }
         content
     }
@@ -162,28 +168,30 @@ impl DictConfig {
     }
 }
 
-fn build_flag_keys_string(used_flags: Vec<FlagCode>) -> String {
-    let mut content: String = "".to_string();
-    for code in used_flags {
-        content += match code {
-            FlagCode(0) => "NOSUGGEST 0\n",
-            FlagCode(1) => "WARN 1\n",
-            FlagCode(2) => "FORBIDWARN 2\n",
-            FlagCode(3) => "COMPOUNDFLAG 3\n",
-            FlagCode(4) => "COMPOUNDBEGIN 4\n",
-            FlagCode(5) => "COMPOUNDLAST 5\n",
-            FlagCode(6) => "COMPOUNDMIDDLE 6\n",
-            FlagCode(7) => "ONLYINCOMPOUND 7\n",
-            FlagCode(8) => "COMPOUNDPERMITFLAG 8\n",
-            FlagCode(9) => "FORBIDDENWORD 9\n",
-            FlagCode(10) => "KEEPCASE 10\n",
-            FlagCode(11) => "NEEDAFFIX 11\n",
-            FlagCode(12) => "SUBSTANDARD 12\n",
-            FlagCode(13) => "CIRCUMFIX 13\n",
-            FlagCode(x) => panic!("Unknown FlagCode({})", x),
+impl DerivedDictData {
+    fn build_flag_keys_string(&self) -> String {
+        let mut content: String = "".to_string();
+        for code in &self.used_flags {
+            content += match code {
+                FlagCode(0) => "NOSUGGEST 0\n",
+                FlagCode(1) => "WARN 1\n",
+                FlagCode(2) => "FORBIDWARN 2\n",
+                FlagCode(3) => "COMPOUNDFLAG 3\n",
+                FlagCode(4) => "COMPOUNDBEGIN 4\n",
+                FlagCode(5) => "COMPOUNDLAST 5\n",
+                FlagCode(6) => "COMPOUNDMIDDLE 6\n",
+                FlagCode(7) => "ONLYINCOMPOUND 7\n",
+                FlagCode(8) => "COMPOUNDPERMITFLAG 8\n",
+                FlagCode(9) => "FORBIDDENWORD 9\n",
+                FlagCode(10) => "KEEPCASE 10\n",
+                FlagCode(11) => "NEEDAFFIX 11\n",
+                FlagCode(12) => "SUBSTANDARD 12\n",
+                FlagCode(13) => "CIRCUMFIX 13\n",
+                FlagCode(x) => panic!("Unknown FlagCode({})", x),
+            }
         }
+        content
     }
-    content
 }
 
 fn build_single_affix_rule_string(
@@ -240,20 +248,6 @@ fn build_affix_flag_string(
         }
         let code: FlagCode = flag_codes[flag];
         content += &format!("{}", code);
-    }
-    content
-}
-
-fn build_replacements_string(reps: &Vec<Replace>) -> String {
-    if reps.is_empty() {
-        return "".to_string();
-    }
-    let num_reps: usize = reps.len();
-    let mut content: String = format!("\nREP {}\n", num_reps);
-    for r in reps {
-        let rm: String = r.remove.replace(" ", "_");
-        let add: String = r.add.replace(" ", "_");
-        content += &format!("REP {} {}\n", rm, add);
     }
     content
 }

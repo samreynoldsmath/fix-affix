@@ -8,12 +8,31 @@ impl HunspellDict {
         let sorted_suffix: Vec<String> = get_sorted_affix_keys(&self.suffix);
         let flag_codes: HashMap<String, FlagCode> =
             build_flag_code_look_up(&sorted_prefix, &sorted_suffix)?;
+        let used_flags: Vec<FlagCode> = self.get_used_flags();
         self.derived = DerivedDictData {
             sorted_prefix,
             sorted_suffix,
             flag_codes,
+            used_flags,
         };
         Ok(())
+    }
+
+    pub(crate) fn get_used_flags(&self) -> Vec<FlagCode> {
+        let mut used_flags: Vec<FlagCode> = vec![];
+        for word in &self.entry {
+            let codes: Vec<FlagCode> = word.collect_flag_codes(&self.derived.flag_codes);
+            for code in codes {
+                if code.0 >= 100 {
+                    continue;
+                }
+                if !used_flags.contains(&code) {
+                    used_flags.push(code);
+                }
+            }
+        }
+        used_flags.sort_by_key(|code| code.0);
+        used_flags
     }
 }
 
@@ -21,26 +40,6 @@ fn get_sorted_affix_keys(affixes: &HashMap<String, Affix>) -> Vec<String> {
     let mut vec_affix: Vec<String> = affixes.keys().cloned().collect();
     vec_affix.sort();
     vec_affix
-}
-
-pub(crate) fn get_used_flags(
-    entries: &[DictEntry],
-    flag_codes: &HashMap<String, FlagCode>,
-) -> Vec<FlagCode> {
-    let mut used_flags: Vec<FlagCode> = vec![];
-    for entry in entries {
-        let codes: Vec<FlagCode> = entry.collect_flag_codes(flag_codes);
-        for code in codes {
-            if code.0 >= 100 {
-                continue;
-            }
-            if !used_flags.contains(&code) {
-                used_flags.push(code);
-            }
-        }
-    }
-    used_flags.sort_by_key(|code| code.0);
-    used_flags
 }
 
 fn build_flag_code_look_up(

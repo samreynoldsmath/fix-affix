@@ -35,6 +35,7 @@ pub(crate) struct DerivedDictData {
     pub(crate) sorted_prefix: Vec<String>,
     pub(crate) sorted_suffix: Vec<String>,
     pub(crate) flag_codes: HashMap<String, FlagCode>,
+    pub(crate) used_flags: Vec<FlagCode>,
 }
 
 #[derive(Debug, Default, Deserialize)]
