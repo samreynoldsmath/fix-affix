@@ -8,7 +8,7 @@ impl HunspellDict {
         let sorted_suffix: Vec<String> = get_sorted_affix_keys(&self.suffix);
         let flag_codes: HashMap<String, FlagCode> =
             build_flag_code_look_up(&sorted_prefix, &sorted_suffix)?;
-        let used_flags: Vec<FlagCode> = self.get_used_flags();
+        let used_flags: Vec<FlagCode> = self.get_used_flags(&flag_codes);
         self.derived = DerivedDictData {
             sorted_prefix,
             sorted_suffix,
@@ -18,10 +18,10 @@ impl HunspellDict {
         Ok(())
     }
 
-    pub(crate) fn get_used_flags(&self) -> Vec<FlagCode> {
+    pub(crate) fn get_used_flags(&self, flag_codes: &HashMap<String, FlagCode>) -> Vec<FlagCode> {
         let mut used_flags: Vec<FlagCode> = vec![];
         for word in &self.entry {
-            let codes: Vec<FlagCode> = word.collect_flag_codes(&self.derived.flag_codes);
+            let codes: Vec<FlagCode> = word.collect_flag_codes(flag_codes);
             for code in codes {
                 if code.0 >= 100 {
                     continue;
@@ -58,18 +58,10 @@ fn build_flag_code_look_up(
 
     flag_codes.insert("{no_suggest}".to_string(), FlagCode(0));
     flag_codes.insert("{warn}".to_string(), FlagCode(1));
-    flag_codes.insert("{forbid_warn}".to_string(), FlagCode(2));
-    flag_codes.insert("{compound_flag}".to_string(), FlagCode(3));
-    flag_codes.insert("{compound_begin}".to_string(), FlagCode(4));
-    flag_codes.insert("{compound_last}".to_string(), FlagCode(5));
-    flag_codes.insert("{compound_middle}".to_string(), FlagCode(6));
-    flag_codes.insert("{only_in_compound}".to_string(), FlagCode(7));
-    flag_codes.insert("{compound_permit_flag}".to_string(), FlagCode(8));
     flag_codes.insert("{forbidden_word}".to_string(), FlagCode(9));
     flag_codes.insert("{keep_case}".to_string(), FlagCode(10));
     flag_codes.insert("{need_affix}".to_string(), FlagCode(11));
     flag_codes.insert("{substandard}".to_string(), FlagCode(12));
-    flag_codes.insert("{circum_fix}".to_string(), FlagCode(13));
 
     let prefix_start: u16 = 100;
     for (i, p) in (prefix_start..).zip(prefixes) {
@@ -96,27 +88,6 @@ impl DictEntry {
         if self.warn {
             entry_codes.push(FlagCode(1));
         }
-        if self.forbid_warn {
-            entry_codes.push(FlagCode(2));
-        }
-        if self.compound_flag {
-            entry_codes.push(FlagCode(3));
-        }
-        if self.compound_begin {
-            entry_codes.push(FlagCode(4));
-        }
-        if self.compound_last {
-            entry_codes.push(FlagCode(5));
-        }
-        if self.compound_middle {
-            entry_codes.push(FlagCode(6));
-        }
-        if self.only_in_compound {
-            entry_codes.push(FlagCode(7));
-        }
-        if self.compound_permit_flag {
-            entry_codes.push(FlagCode(8));
-        }
         if self.forbidden_word {
             entry_codes.push(FlagCode(9));
         }
@@ -128,9 +99,6 @@ impl DictEntry {
         }
         if self.substandard {
             entry_codes.push(FlagCode(12));
-        }
-        if self.circum_fix {
-            entry_codes.push(FlagCode(13));
         }
 
         for p in &self.prefix {

@@ -12,7 +12,6 @@ pub struct HunspellDict {
     pub(crate) config: DictConfig,
     pub(crate) prefix: HashMap<String, Affix>,
     pub(crate) suffix: HashMap<String, Affix>,
-    pub(crate) replace: Vec<Replace>,
     pub(crate) entry: Vec<DictEntry>,
     #[serde(skip)]
     pub(crate) derived: DerivedDictData,
@@ -50,13 +49,14 @@ pub(crate) struct DictConfig {
     pub(crate) language_code: String,
     pub(crate) ignore_characters: String,
     pub(crate) try_characters: String,
-    pub(crate) max_compound_suggestions: u8,
     pub(crate) max_n_gram_suggestions: u8,
     pub(crate) max_diff: u8,
     pub(crate) only_max_diff: bool,
     pub(crate) no_split_suggestions: bool,
     pub(crate) suggest_with_dots: bool,
+    pub(crate) forbid_warn: bool,
     pub(crate) input_conversion: Vec<Replace>,
+    pub(crate) replace: Vec<Replace>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -83,18 +83,10 @@ pub(crate) struct DictEntry {
     pub(crate) suffix: Vec<String>,
     pub(crate) no_suggest: bool,
     pub(crate) warn: bool,
-    pub(crate) forbid_warn: bool,
-    pub(crate) compound_flag: bool,
-    pub(crate) compound_begin: bool,
-    pub(crate) compound_last: bool,
-    pub(crate) compound_middle: bool,
-    pub(crate) only_in_compound: bool,
-    pub(crate) compound_permit_flag: bool,
     pub(crate) forbidden_word: bool,
     pub(crate) keep_case: bool,
     pub(crate) need_affix: bool,
     pub(crate) substandard: bool,
-    pub(crate) circum_fix: bool,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -112,7 +104,7 @@ pub struct Affix {
     pub(crate) rules: Vec<CondReplace>,
     #[serde(default = "bool_true")]
     pub(crate) cross_product: bool,
-    pub(crate) circum_fix: bool,
+    pub(crate) circumfix: bool,
     pub(crate) substandard: bool,
 }
 

@@ -101,7 +101,7 @@ impl HunspellDict {
                     affix_str,
                     code,
                     afx.substandard,
-                    afx.circum_fix,
+                    afx.circumfix,
                 );
             }
         }
@@ -109,12 +109,12 @@ impl HunspellDict {
     }
 
     fn build_replacements_string(&self) -> String {
-        if self.replace.is_empty() {
+        if self.config.replace.is_empty() {
             return "".to_string();
         }
-        let num_reps: usize = self.replace.len();
+        let num_reps: usize = self.config.replace.len();
         let mut content: String = format!("\nREP {}\n", num_reps);
-        for r in &self.replace {
+        for r in &self.config.replace {
             let rm: String = r.remove.replace(" ", "_");
             let add: String = r.add.replace(" ", "_");
             content += &format!("REP {} {}\n", rm, add);
@@ -144,9 +144,6 @@ impl DictConfig {
         if !self.try_characters.is_empty() {
             content += &format!("TRY {}\n", self.try_characters);
         }
-        if self.max_compound_suggestions > 0 {
-            content += &format!("MAXCPDSUGS {}\n", self.max_compound_suggestions);
-        }
         if self.max_n_gram_suggestions > 0 {
             content += &format!("MAXNGRAMSUGS {}\n", self.max_n_gram_suggestions);
         }
@@ -161,6 +158,9 @@ impl DictConfig {
         }
         if self.suggest_with_dots {
             content += "SUGSWITHDOTS\n";
+        }
+        if self.forbid_warn {
+            content += "FORBIDWARN\n";
         }
         if !self.input_conversion.is_empty() {
             content += &format!("ICONV {}\n", self.input_conversion.len());
@@ -179,18 +179,10 @@ impl DerivedDictData {
             content += match code {
                 FlagCode(0) => "NOSUGGEST 0\n",
                 FlagCode(1) => "WARN 1\n",
-                FlagCode(2) => "FORBIDWARN 2\n",
-                FlagCode(3) => "COMPOUNDFLAG 3\n",
-                FlagCode(4) => "COMPOUNDBEGIN 4\n",
-                FlagCode(5) => "COMPOUNDLAST 5\n",
-                FlagCode(6) => "COMPOUNDMIDDLE 6\n",
-                FlagCode(7) => "ONLYINCOMPOUND 7\n",
-                FlagCode(8) => "COMPOUNDPERMITFLAG 8\n",
                 FlagCode(9) => "FORBIDDENWORD 9\n",
                 FlagCode(10) => "KEEPCASE 10\n",
                 FlagCode(11) => "NEEDAFFIX 11\n",
                 FlagCode(12) => "SUBSTANDARD 12\n",
-                FlagCode(13) => "CIRCUMFIX 13\n",
                 FlagCode(x) => panic!("Unknown FlagCode({})", x),
             }
         }
@@ -204,7 +196,7 @@ fn build_single_affix_rule_string(
     affix_str: &str,
     code: FlagCode,
     substandard: bool,
-    circum_fix: bool,
+    circumfix: bool,
 ) -> String {
     let strip: &str = match &rule.strip {
         Some(s) => s,
@@ -221,8 +213,8 @@ fn build_single_affix_rule_string(
     if substandard {
         affix_flags.push("substandard".to_string());
     }
-    if circum_fix {
-        affix_flags.push("circum_fix".to_string());
+    if circumfix {
+        affix_flags.push("circumfix".to_string());
     }
     affix_flags.sort();
     let mut content: String = format!("{} {}   {} {}", affix_str, code, strip, &rule.add);
