@@ -6,10 +6,9 @@ Build a Hunspell dictionary via TOML
 
 `fix-affix` is a command line utility that allows the user to build a Hunspell dictionary from a less-cryptic TOML file. It is a free and open-source tool built in Rust, which I developed to assist me with building a repository of [math words](https://github.com/samreynoldsmath/math-words).
 
-All of the code and documentation was written by a real human, not an LLM.
+`fix-affix` is a work-in-progress and cannot yet generate every possible Hunspell library. In particular, word compounding has not yet been implemented.
 
-> [!WARN]
-> `fix-affix` is a work-in-progress and cannot yet generate every possible Hunspell library. In particular, word compounding has not yet been implemented.
+All of the code and documentation was written by a real human, not an LLM.
 
 ## Installation
 
@@ -53,18 +52,11 @@ encoding = "UTF-8"
 additional_word_characters = "'"
 try_characters = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
 complex_prefixes = true
-
-[[config.input_conversion]]
-remove = "’"
-add = "'"
-
-[[config.replace]]
-remove = "ie"
-add = "ai"
-
-[[config.replace]]
-remove = "alot"
-add = "a lot"
+input_conversion = [{remove = "’", add = "'"}]
+replace = [
+    {remove = "ie", add = "ei"},
+    {remove = "alot", add = "a lot"},
+]
 
 [prefix.non]
 rules = [{add = "non"}]
@@ -152,49 +144,51 @@ Unless otherwise noted:
 
 Where appropriate, the TOML and Hunspell notation is separated by | for easy comparison.
 
-### `metadata`
+### Metadata
+`[metadata]`
 - `title` (**Required:** String): A short name for your dictionary
 - `description` (**Required:** String): A description of your dictionary
 - `version` (**Required:** String): The dictionary version, such as SemVer
 - `authors` (**Required:** Array of Strings): The authors of the dictionary (and optionally their contact info)
 
-### `config`
-- `encoding` (String) | "SET": The character encoding of the dictionary
-- `additional_word_characters` (String) | "WORDCHARS": Extends the character set for valid words
-- `complex_prefixes` (Boolean) | "COMPLEXPREFIXES": Allow stacking of two prefixes and disable stacking of suffixes
-- `language_code` (String) | "LANG": Set language code for language-specific functions of Hunspell
-- `ignore_characters` (String) | "IGNORE": Characters that will be ignored in dictionary words
-- `try_characters` (String) | "TRY": The order in which characters are substituted to offer spelling suggestions
-- `max_n_gram_suggestions` (Unsigned Integer) | "MAXNGRAMSUGS": Maximum number of n-gram suggestions
-- `max_diff` (1 -- 10) | "MAXDIFF": Similarity factor for n-gram suggestions
-- `only_max_diff` (Boolean) | "ONLYMAXDIFF": Remove all bad n-gram suggestions
-- `no_split_suggestions` (Boolean) | "NOSPLITSUGS": Disable word suggestions with spaces
-- `suggest_with_dots` (Boolean) | "SUGSWITHDOTS": Add dots to suggestions if input word ends in dots
-- `forbid_warn` (Boolean) | "FORBIDWARN": Words with the `warn` | "WARN" flag are not accepted as correctly spelled
-- `input_conversion` (Array of Tables) | "ICONV": Defines character conversions prior to applying the spell checker. Each element of the array is a table with two entries, `remove` and `add`, whose values are strings.
+### Configuration
+`[config]`
+- `encoding` (String) | *SET*: The character encoding of the dictionary
+- `additional_word_characters` (String) | *WORDCHARS*: Extends the character set for valid words
+- `complex_prefixes` (Boolean) | *COMPLEXPREFIXES*: Allow stacking of two prefixes and disable stacking of suffixes
+- `language_code` (String) | *LANG*: Set language code for language-specific functions of Hunspell
+- `ignore_characters` (String) | *IGNORE*: Characters that will be ignored in dictionary words
+- `try_characters` (String) | *TRY*: The order in which characters are substituted to offer spelling suggestions
+- `max_n_gram_suggestions` (Unsigned Integer) | *MAXNGRAMSUGS*: Maximum number of n-gram suggestions
+- `max_diff` (1 -- 10) | *MAXDIFF*: Similarity factor for n-gram suggestions
+- `only_max_diff` (Boolean) | *ONLYMAXDIFF*: Remove all bad n-gram suggestions
+- `no_split_suggestions` (Boolean) | *NOSPLITSUGS*: Disable word suggestions with spaces
+- `suggest_with_dots` (Boolean) | *SUGSWITHDOTS*: Add dots to suggestions if input word ends in dots
+- `forbid_warn` (Boolean) | *FORBIDWARN*: Words with the `warn` | *WARN* flag are not accepted as correctly spelled
+- `input_conversion` (Array of Tables) | *ICONV*: Defines character conversions prior to applying the spell checker. Each element of the array is a table with two entries, `remove` and `add`, whose values are strings.
 - `replace` (Array of Tables): Defines alternative spelling patterns for common misspellings; similar to `metadata.input_conversion`, `replace` is an array of tables, each having an `add` and `remove` field whose values are strings
 
-### `prefix` and `affix`
-Affixes come in two flavors: `prefix` | "PFX" and `suffix` | "SFX". We focus on `prefix`, as `suffix` works the same way.
+### Affixes
+Affixes come in two flavors: `prefix` | *PFX* and `suffix` | *SFX*. We focus on `prefix`, as `suffix` works the same way.
 
-`prefix` is a table of tables. Each sub-table is given a unique name, and defines a how a prefix can be joined to a stem in four key-value pairs:
+`[prefix]` is a table of tables. Each sub-table is given a unique name, and defines a how a prefix can be joined to a stem in four key-value pairs:
 - `rules` (Array of Tables): Each table in the array consists of:
     - `add` (**Required:** String): The characters to be appended
     - `strip` (String): The characters to be removed prior to appending
     - `cond` (String): The conditions for when the rule can be applied, specified using the same regex notation as Hunspell
     - `stack` (Array of Strings): If `config.complex_prefixes = true`, each string in `stack` is the key of another `prefix` table that is permitted to be secondarily appended; if `config.complex_prefixes = false`, this instead applies to `suffix`
-- `cross_product` (Boolean) | "Y"/"N": **True by default.*** If true, this prefix is permitted to be combined with suffixes
+- `cross_product` (Boolean) | *Y*/*N*: **True by default.** If true, this prefix is permitted to be combined with suffixes
 - `circumfix` (Boolean): Can be used as part of a circumfix in languages that allow them
 - `substandard` (Boolean): Any word with the prefix will not be suggested or used in morphological analysis
 
-### `entry`
-`entry` is an array of tables defining words and word stems, along with several flags that determine how they interact with affixes:
+### Entries
+`[entry]` is an array of tables defining words and word stems, along with several flags that determine how they interact with affixes:
 - `stem` (String): The word or word stem
 - `prefix` (Array of Strings): The keys of each prefix table that can be applied to the stem
 - `suffix` (Array of Strings): The keys of each suffix table that can be applied to the stem
-- `no_suggest` (Boolean) | "NOSUGGEST" flag: This word will not appear in spelling suggestions
-- `warn` (Boolean) | "WARN": For rare words that are often spelling mistakes
-- `forbidden_word` (Boolean) | "FORBIDDENWORD" flag: This word will always be marked as misspelled
-- `keep_case` (Boolean) | "KEEPCASE" flag: This word will be marked as misspelled unless lower/uppercase letters match exactly
-- `need_affix` (Boolean) | "NEEDAFFIX" flag: This stem will be marked as misspelled unless it has a prefix/suffix
-- `substandard` (Boolean) | "SUBSTANDARD": This word will not be suggested or used in morphological generation
+- `no_suggest` (Boolean) | *NOSUGGEST* flag: This word will not appear in spelling suggestions
+- `warn` (Boolean) | *WARN*: For rare words that are often spelling mistakes
+- `forbidden_word` (Boolean) | *FORBIDDENWORD* flag: This word will always be marked as misspelled
+- `keep_case` (Boolean) | *KEEPCASE* flag: This word will be marked as misspelled unless lower/uppercase letters match exactly
+- `need_affix` (Boolean) | *NEEDAFFIX* flag: This stem will be marked as misspelled unless it has a prefix/suffix
+- `substandard` (Boolean) | *SUBSTANDARD*: This word will not be suggested or used in morphological generation

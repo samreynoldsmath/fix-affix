@@ -12,18 +12,11 @@ encoding = "UTF-8"
 additional_word_characters = "'"
 try_characters = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
 complex_prefixes = true
-
-[[config.input_conversion]]
-remove = "’"
-add = "'"
-
-[[config.replace]]
-remove = "ie"
-add = "ai"
-
-[[config.replace]]
-remove = "alot"
-add = "a lot"
+input_conversion = [{remove = "’", add = "'"}]
+replace = [
+    {remove = "ie", add = "ei"},
+    {remove = "alot", add = "a lot"},
+]
 
 [prefix.non]
 rules = [{add = "non"}]
