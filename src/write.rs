@@ -177,9 +177,9 @@ impl DerivedDictData {
         let mut content: String = "".to_string();
         for code in &self.used_flags {
             content += match code {
-                FlagCode(0) => "NOSUGGEST 0\n",
-                FlagCode(1) => "WARN 1\n",
-                FlagCode(9) => "FORBIDDENWORD 9\n",
+                FlagCode(1) => "NOSUGGEST 1\n",
+                FlagCode(2) => "WARN 2\n",
+                FlagCode(3) => "FORBIDDENWORD 3\n",
                 FlagCode(10) => "KEEPCASE 10\n",
                 FlagCode(11) => "NEEDAFFIX 11\n",
                 FlagCode(12) => "SUBSTANDARD 12\n",

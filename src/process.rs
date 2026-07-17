@@ -56,9 +56,9 @@ fn build_flag_code_look_up(
 
     let mut flag_codes: HashMap<String, FlagCode> = HashMap::new();
 
-    flag_codes.insert("{no_suggest}".to_string(), FlagCode(0));
-    flag_codes.insert("{warn}".to_string(), FlagCode(1));
-    flag_codes.insert("{forbidden_word}".to_string(), FlagCode(9));
+    flag_codes.insert("{no_suggest}".to_string(), FlagCode(1));
+    flag_codes.insert("{warn}".to_string(), FlagCode(2));
+    flag_codes.insert("{forbidden_word}".to_string(), FlagCode(3));
     flag_codes.insert("{keep_case}".to_string(), FlagCode(10));
     flag_codes.insert("{need_affix}".to_string(), FlagCode(11));
     flag_codes.insert("{substandard}".to_string(), FlagCode(12));
@@ -83,13 +83,13 @@ impl DictEntry {
     ) -> Vec<FlagCode> {
         let mut entry_codes: Vec<FlagCode> = vec![];
         if self.no_suggest {
-            entry_codes.push(FlagCode(0));
-        }
-        if self.warn {
             entry_codes.push(FlagCode(1));
         }
+        if self.warn {
+            entry_codes.push(FlagCode(2));
+        }
         if self.forbidden_word {
-            entry_codes.push(FlagCode(9));
+            entry_codes.push(FlagCode(3));
         }
         if self.keep_case {
             entry_codes.push(FlagCode(10));
