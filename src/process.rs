@@ -2,6 +2,9 @@ use crate::{Affix, DerivedDictData, DictEntry, FlagCode, HunspellDict};
 use anyhow::{Error, Result};
 use std::collections::HashMap;
 
+const MAX_CONFIG_CODE: u16 = 100;
+const MAX_FLAGS: u16 = 65_000;
+
 impl HunspellDict {
     pub(crate) fn compute_derived_data(&mut self) -> Result<()> {
         let sorted_prefix: Vec<String> = get_sorted_affix_keys(&self.prefix);
@@ -23,7 +26,7 @@ impl HunspellDict {
         for word in &self.entry {
             let codes: Vec<FlagCode> = word.collect_flag_codes(flag_codes);
             for code in codes {
-                if code.0 >= 100 {
+                if code.0 >= MAX_CONFIG_CODE {
                     continue;
                 }
                 if !used_flags.contains(&code) {
@@ -46,10 +49,11 @@ fn build_flag_code_look_up(
     prefixes: &Vec<String>,
     suffixes: &Vec<String>,
 ) -> Result<HashMap<String, FlagCode>> {
-    let k: usize = prefixes.len();
+    let num_pfx: u16 = prefixes.len() as u16;
+    let num_sfx: u16 = suffixes.len() as u16;
 
-    let total_num_flags: usize = 100 + k + suffixes.len();
-    if total_num_flags > 65_000 {
+    let total_num_flags: u16 = MAX_CONFIG_CODE + num_pfx + num_sfx;
+    if total_num_flags > MAX_FLAGS {
         let e: Error = Error::msg("Total number of flags cannot exceed 65,000");
         return Err(e);
     }
@@ -63,12 +67,12 @@ fn build_flag_code_look_up(
     flag_codes.insert("{need_affix}".to_string(), FlagCode(11));
     flag_codes.insert("{substandard}".to_string(), FlagCode(12));
 
-    let prefix_start: u16 = 100;
+    let prefix_start: u16 = MAX_CONFIG_CODE;
     for (i, p) in (prefix_start..).zip(prefixes) {
         flag_codes.insert(p.to_string(), FlagCode(i));
     }
 
-    let suffix_start: u16 = (100 + k) as u16;
+    let suffix_start: u16 = MAX_CONFIG_CODE + num_pfx;
     for (i, p) in (suffix_start..).zip(suffixes) {
         flag_codes.insert(p.to_string(), FlagCode(i));
     }
