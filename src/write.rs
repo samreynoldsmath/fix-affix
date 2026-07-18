@@ -30,7 +30,7 @@ impl HunspellDict {
         let mut content: String = format!("{}\n", self.entry.len());
         for word in &self.entry {
             content += &word.stem;
-            let entry_codes: Vec<FlagCode> = word.collect_flag_codes(&self.derived.flag_codes);
+            let entry_codes: Vec<FlagCode> = word.collect_flag_codes(&self.derived.code_map);
             if entry_codes.is_empty() {
                 content += "\n";
                 continue;
@@ -78,9 +78,19 @@ impl HunspellDict {
 
     fn build_affix_rules_string(&self, affix_type: AffixType) -> String {
         let mut content: String = "".to_string();
-        let (affix_keys, affixes, affix_str) = match affix_type {
-            AffixType::Prefix => (&self.derived.sorted_prefix, &self.prefix, "PFX"),
-            AffixType::Suffix => (&self.derived.sorted_suffix, &self.suffix, "SFX"),
+        let (affix_keys, affixes, affix_str, affix_code_map) = match affix_type {
+            AffixType::Prefix => (
+                &self.derived.sorted_prefix_keys,
+                &self.prefix,
+                "PFX",
+                &self.derived.code_map.pfx_map,
+            ),
+            AffixType::Suffix => (
+                &self.derived.sorted_suffix_keys,
+                &self.suffix,
+                "SFX",
+                &self.derived.code_map.sfx_map,
+            ),
         };
         for k in affix_keys {
             let afx: Affix = affixes[k].clone();
@@ -88,7 +98,7 @@ impl HunspellDict {
             if num_rules == 0 {
                 continue;
             }
-            let code: FlagCode = self.derived.flag_codes[k];
+            let code: FlagCode = affix_code_map[k];
             let cross_prod: &str = match afx.cross_product {
                 true => "Y",
                 false => "N",
@@ -97,7 +107,7 @@ impl HunspellDict {
             for rule in &afx.rules {
                 content += &build_single_affix_rule_string(
                     rule,
-                    &self.derived.flag_codes,
+                    affix_code_map,
                     affix_str,
                     code,
                     afx.substandard,
@@ -175,16 +185,11 @@ impl DictConfig {
 impl DerivedDictData {
     fn build_flag_keys_string(&self) -> String {
         let mut content: String = "".to_string();
-        for code in &self.used_flags {
-            content += match code {
-                FlagCode(1) => "NOSUGGEST 1\n",
-                FlagCode(2) => "WARN 2\n",
-                FlagCode(3) => "FORBIDDENWORD 3\n",
-                FlagCode(10) => "KEEPCASE 10\n",
-                FlagCode(11) => "NEEDAFFIX 11\n",
-                FlagCode(12) => "SUBSTANDARD 12\n",
-                FlagCode(x) => panic!("Unknown FlagCode({})", x),
+        for (key, code) in &self.code_map.cfg_map {
+            if !self.used_flags.contains(code) {
+                continue;
             }
+            content += &format!("{} {}\n", key, code.0);
         }
         content
     }
@@ -192,7 +197,7 @@ impl DerivedDictData {
 
 fn build_single_affix_rule_string(
     rule: &CondReplace,
-    flag_codes: &HashMap<String, FlagCode>,
+    affix_code_map: &HashMap<String, FlagCode>,
     affix_str: &str,
     code: FlagCode,
     substandard: bool,
@@ -218,31 +223,31 @@ fn build_single_affix_rule_string(
     }
     affix_flags.sort();
     let mut content: String = format!("{} {}   {} {}", affix_str, code, strip, &rule.add);
-    content += &build_affix_flag_string(&affix_flags, flag_codes);
+    content += &build_affix_flag_string(&affix_flags, affix_code_map);
     content += &format!(" {}\n", cond);
     content
 }
 
 fn build_affix_flag_string(
     affix_flags: &[String],
-    flag_codes: &HashMap<String, FlagCode>,
+    affix_code_map: &HashMap<String, FlagCode>,
 ) -> String {
     if affix_flags.is_empty() {
         return "".to_string();
     }
     let mut content: String = "/".to_string();
     for flag in affix_flags.iter().take(affix_flags.len() - 1) {
-        if !flag_codes.contains_key(flag) {
+        if !affix_code_map.contains_key(flag) {
             panic!("No flag code for {}", flag);
         }
-        let code: FlagCode = flag_codes[flag];
+        let code: FlagCode = affix_code_map[flag];
         content += &format!("{},", code)
     }
     if let Some(flag) = affix_flags.last() {
-        if !flag_codes.contains_key(flag) {
+        if !affix_code_map.contains_key(flag) {
             panic!("No flag code for {}", flag);
         }
-        let code: FlagCode = flag_codes[flag];
+        let code: FlagCode = affix_code_map[flag];
         content += &format!("{}", code);
     }
     content

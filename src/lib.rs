@@ -3,10 +3,11 @@
 
 mod process;
 mod read;
+mod types;
 mod write;
 
-pub use read::HunspellDict;
-use read::{Affix, CondReplace, DerivedDictData, DictConfig, DictEntry, FlagCode};
+pub use types::HunspellDict;
+use types::{Affix, CodeMap, CondReplace, DerivedDictData, DictConfig, DictEntry, FlagCode};
 
 const VERSION: &str = "0.1.1";
 

@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 
 ### Fixed
 - Prevent zero ("0") flags
+- Prevent ambiguous flags when prefix and suffix have same label
 
 
 ## [0.1.0] - 2026-07-16
