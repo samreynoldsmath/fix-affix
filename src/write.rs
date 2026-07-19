@@ -222,7 +222,7 @@ fn build_single_affix_rule_string(
         affix_flags.push("circumfix".to_string());
     }
     affix_flags.sort();
-    let mut content: String = format!("{} {}   {} {}", affix_str, code, strip, &rule.add);
+    let mut content: String = format!("{} {}   {} {}", affix_str, code, strip, rule.add);
     content += &build_affix_flag_string(&affix_flags, affix_code_map);
     content += &format!(" {}\n", cond);
     content

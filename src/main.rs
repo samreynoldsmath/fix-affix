@@ -15,7 +15,7 @@ fn main() {
 
     let dict: HunspellDict = match HunspellDict::load_from_toml_file(&toml_file) {
         Ok(data) => data,
-        Err(e) => panic!("TOML dictionary not loaded ({:?}): {}", &toml_file, e),
+        Err(e) => panic!("TOML dictionary not loaded ({:?}): {}", toml_file, e),
     };
 
     if let Err(e) = dict.write_dic_file(&dic_file) {
