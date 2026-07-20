@@ -15,10 +15,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
     - [x] MAP
     - [x] OCONV
     - [x] PHONE
-- [x] Clarify in README which keywords are  and are not supported
-- [x] Update example to reflect changes
-- [ ] Add documentation on panics
+- [x] Add `clap` to dependencies
+- [x] Add support for `--help` and `--version` flags
 
+### Changed
+- [x] Clarify in README which keywords are and are not supported
+- [x] Update example to reflect changes
 
 ## [0.1.1]
 

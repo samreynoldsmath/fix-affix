@@ -11,7 +11,5 @@ use types::{
     Affix, CodeMap, CondReplace, DerivedDictData, DictConfig, DictEntry, FlagCode, Replace,
 };
 
-const VERSION: &str = "0.1.1";
-
 const REPO_URL: &str = "https://github.com/samreynoldsmath/fix-affix";
 const DATE_FMT: &str = "%Y-%m-%d %H:%M";

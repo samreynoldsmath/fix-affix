@@ -1,5 +1,5 @@
 use crate::{Affix, CondReplace, DerivedDictData, DictConfig, FlagCode, HunspellDict, Replace};
-use crate::{DATE_FMT, REPO_URL, VERSION};
+use crate::{DATE_FMT, REPO_URL};
 use anyhow::Result;
 use chrono::prelude::{Local, Utc};
 use std::collections::HashMap;
@@ -74,7 +74,7 @@ impl HunspellDict {
         }
 
         content += "#\n# This Hunspell dictionary was created using ";
-        content += &format!("fix-affix v{}\n", VERSION);
+        content += &format!("fix-affix v{}\n", clap::crate_version!());
         content += &format!("#   {}\n\n", REPO_URL);
         content
     }
