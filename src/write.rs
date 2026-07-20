@@ -54,6 +54,7 @@ impl HunspellDict {
         content += &self.build_affix_rules_string(AffixType::Prefix);
         content += &self.build_affix_rules_string(AffixType::Suffix);
         content += &self.build_replacements_string();
+        content += &self.build_map_string();
         content
     }
 
@@ -131,6 +132,27 @@ impl HunspellDict {
         }
         content
     }
+
+    fn build_map_string(&self) -> String {
+        if self.config.map_characters.is_empty() {
+            return "".to_string();
+        }
+        let num_maps: usize = self.config.map_characters.len();
+        let mut content: String = format!("\nMAP {}\n", num_maps);
+        for r in &self.config.map_characters {
+            let rm: String = wrap_string_in_paren_if_len_not_one(&r.remove);
+            let add: String = wrap_string_in_paren_if_len_not_one(&r.add);
+            content += &format!("MAP {}{}\n", rm, add);
+        }
+        content
+    }
+}
+
+fn wrap_string_in_paren_if_len_not_one(s: &str) -> String {
+    match s.chars().count() {
+        1 => s.to_string(),
+        _ => format!("({})", s),
+    }
 }
 
 impl DictConfig {
@@ -153,6 +175,18 @@ impl DictConfig {
         }
         if !self.try_characters.is_empty() {
             content += &format!("TRY {}\n", self.try_characters);
+        }
+        if !self.key_characters.is_empty() {
+            content += "KEY ";
+            let n: usize = self.key_characters.len();
+            for char_group in self.key_characters.iter().take(n - 1) {
+                content += char_group;
+                content += "|";
+            }
+            if let Some(char_group) = self.key_characters.last() {
+                content += char_group;
+            }
+            content += "\n";
         }
         if self.max_n_gram_suggestions > 0 {
             content += &format!("MAXNGRAMSUGS {}\n", self.max_n_gram_suggestions);

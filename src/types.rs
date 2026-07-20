@@ -39,6 +39,8 @@ pub(crate) struct DictConfig {
     pub(crate) language_code: String,
     pub(crate) ignore_characters: String,
     pub(crate) try_characters: String,
+    pub(crate) key_characters: Vec<String>,
+    pub(crate) map_characters: Vec<Replace>,
     pub(crate) max_n_gram_suggestions: u8,
     pub(crate) max_diff: u8,
     pub(crate) only_max_diff: bool,

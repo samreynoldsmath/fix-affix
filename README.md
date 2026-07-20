@@ -49,8 +49,13 @@ authors = [
 
 [config]
 encoding = "UTF-8"
-additional_word_characters = "'"
+additional_word_characters = "'üß"
 try_characters = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
+key_characters = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
+map_characters = [
+    {remove = "u", add = "ü"},
+    {remove = "ss", add = "ß"}
+]
 complex_prefixes = true
 input_conversion = [{remove = "’", add = "'"}]
 replace = [
@@ -75,7 +80,7 @@ rules = [
 ]
 
 [[entry]]
-stem = "Sam"
+stem = "Frühstück"
 keep_case = true
 suffix = ["'s"]
 
@@ -99,12 +104,13 @@ The contents of `my_dict.aff`:
 ```text
 FLAG num
 SET UTF-8
-WORDCHARS '
+WORDCHARS 'üß
 COMPLEXPREFIXES
 TRY esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'
+KEY qwertyuiop|asdfghjkl|zxcvbnm
 ICONV 1
 ICONV ’ '
-NOSUGGEST 0
+NOSUGGEST 1
 KEEPCASE 10
 
 PFX 100 Y 1
@@ -121,16 +127,21 @@ SFX 103   e ive e
 SFX 103   0 ive [^e]
 
 REP 2
-REP ie ai
+REP ie ei
 REP alot a_lot
+
+MAP 2
+MAP uü
+MAP (ss)ß
+
 ```
 
 The contents of `my_dict.dic`:
 ```text
 3
-Sam/10,102
+Frühstück/10,102
 act/100,101,103
-dismiss/0,103
+dismiss/1,103
 ```
 
 ## TOML File Specification for Hunspell Dictionaries
@@ -184,9 +195,9 @@ The `[config]` table holds the data needed to configure the `.aff` file options.
 |FULLSTRIP|🔜
 |ICONV|v0.1.0|`input_conversion`|Array of tables|Defines character conversions prior to applying the spell checker; each element of the array is a table with two entries, `remove` and `add`, whose values are strings
 |IGNORE|v0.1.0|`ignore_characters`|String|Characters that will be ignored in dictionary words
-|KEY|🔜
+|KEY|v0.2.0|`key_characters`|Array of strings|Groups of character replacements based on keyboard layout
 |LANG|v0.1.0|`language_code`|String|Set language code for language-specific functions of Hunspell
-|MAP|🔜
+|MAP|v0.2.0|`map_characters`|Array of tables|Target certain character replacements when making suggestions (useful for characters with diacritics); array of tables, each having an `add` and `remove` field whose values are strings
 |MAXCPDSUGS|🔜
 |MAXDIFF|v0.1.0|`max_diff`|Integers 1 - 10|Similarity factor for n-gram suggestions
 |MAXNGRAMSUGS|v0.1.0|`max_n_gram_suggestions`|Unsigned integer|Maximum number of n-gram suggestions
@@ -194,7 +205,7 @@ The `[config]` table holds the data needed to configure the `.aff` file options.
 |OCONV|🔜
 |ONLYMAXDIFF|v0.1.0|`only_max_diff`|Boolean|Remove all bad n-gram suggestions
 |PHONE|🔜
-|REP|v0.1.0|`replace`|Array of tables|Defines alternative spelling patterns for common misspellings; similar to `metadata.input_conversion`, `replace` is an array of tables, each having an `add` and `remove` field whose values are strings
+|REP|v0.1.0|`replace`|Array of tables|Defines alternative spelling patterns for common misspellings; `replace` is an array of tables, each having an `add` and `remove` field whose values are strings
 |SET|v0.1.0|`encoding`|String|The character encoding of the dictionary
 |SIMPLIFIEDTRIPLE|🔜
 |SUGSWITHDOTS|v0.1.0|`suggest_with_dots`|Boolean|Add dots to suggestions if input word ends in dots

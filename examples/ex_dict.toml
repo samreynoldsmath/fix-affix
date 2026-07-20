@@ -9,8 +9,13 @@ authors = [
 
 [config]
 encoding = "UTF-8"
-additional_word_characters = "'"
+additional_word_characters = "'üß"
 try_characters = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
+key_characters = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
+map_characters = [
+    {remove = "u", add = "ü"},
+    {remove = "ss", add = "ß"}
+]
 complex_prefixes = true
 input_conversion = [{remove = "’", add = "'"}]
 replace = [
@@ -35,7 +40,7 @@ rules = [
 ]
 
 [[entry]]
-stem = "Sam"
+stem = "Frühstück"
 keep_case = true
 suffix = ["'s"]
 
@@ -48,45 +53,3 @@ suffix = ["ive"]
 stem = "dismiss"
 no_suggest = true
 suffix = ["ive"]
-
-
-# This is will generate the following files in the conventional Hunspell format
-# (with possibly different flag labels):
-#
-#
-# ex_dict.aff
-# -----------
-# SET UTF-8
-# WORDCHARS '
-# TRY esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'
-# ICONV 1
-# ICONV ’ '
-# NOSUGGEST !
-# KEEPCASE $
-# COMPLEXPREFIXES
-#
-# PFX A Y 1
-# PFX A   0     non        .
-#
-# PFX A Y 1
-# PFX A   0     re/N       .
-#
-# SFX V Y 2
-# SFX V   e     ive        e
-# SFX V   0     ive        [^e]
-#
-# SFX M N 1
-# SFX M   0     's         .
-#
-# REP 2
-# REP ie ai
-# REP alot a_lot
-#
-#
-# ex_dict.dic
-# -----------
-# 3
-# Sam/$M
-# act/AV
-# dismiss/!V
-#
