@@ -1,6 +1,6 @@
 use crate::{Affix, CondReplace, DerivedDictData, DictConfig, FlagCode, HunspellDict, Replace};
 use crate::{DATE_FMT, REPO_URL};
-use anyhow::Result;
+use anyhow::{Error, Result};
 use chrono::prelude::{Local, Utc};
 use std::collections::HashMap;
 use std::{fs, path::Path};
@@ -13,24 +13,24 @@ enum AffixType {
 impl HunspellDict {
     /// Writes the .dic file
     pub fn write_dic_file(&self, dic_file: &Path) -> Result<()> {
-        let dic: String = self.build_dic_string();
+        let dic: String = self.build_dic_string()?;
         fs::write(dic_file, dic)?;
         Ok(())
     }
 
     /// Writes the .aff file
     pub fn write_aff_file(&self, aff_file: &Path) -> Result<()> {
-        let aff: String = self.build_aff_string();
+        let aff: String = self.build_aff_string()?;
         fs::write(aff_file, aff)?;
         Ok(())
     }
 
     /// Returns a string containing the contents of the .dic file
-    pub fn build_dic_string(&self) -> String {
+    pub fn build_dic_string(&self) -> Result<String> {
         let mut content: String = format!("{}\n", self.entry.len());
         for word in &self.entry {
             content += &word.stem;
-            let entry_codes: Vec<FlagCode> = word.collect_flag_codes(&self.derived.code_map);
+            let entry_codes: Vec<FlagCode> = word.collect_flag_codes(&self.derived.code_map)?;
             if entry_codes.is_empty() {
                 content += "\n";
                 continue;
@@ -43,21 +43,21 @@ impl HunspellDict {
                 content += &format!("{}\n", code);
             }
         }
-        content
+        Ok(content)
     }
 
     /// Returns a string containing the contents of the .aff file
-    pub fn build_aff_string(&self) -> String {
+    pub fn build_aff_string(&self) -> Result<String> {
         let mut content: String = self.build_aff_header();
         content += &self.config.build_aff_preamble_string();
         content += &self.derived.build_flag_keys_string();
-        content += &self.build_affix_rules_string(AffixType::Prefix);
-        content += &self.build_affix_rules_string(AffixType::Suffix);
+        content += &self.build_affix_rules_string(AffixType::Prefix)?;
+        content += &self.build_affix_rules_string(AffixType::Suffix)?;
         content += &build_replacements_string(&self.config.replace, "REP", replace_formatter);
         content +=
             &build_replacements_string(&self.config.phonetic_replace, "PHONE", replace_formatter);
         content += &build_replacements_string(&self.config.map_characters, "MAP", map_formatter);
-        content
+        Ok(content)
     }
 
     fn build_aff_header(&self) -> String {
@@ -79,7 +79,7 @@ impl HunspellDict {
         content
     }
 
-    fn build_affix_rules_string(&self, affix_type: AffixType) -> String {
+    fn build_affix_rules_string(&self, affix_type: AffixType) -> Result<String> {
         let mut content: String = "".to_string();
         let (affix_keys, affixes, affix_str, affix_code_map) = match affix_type {
             AffixType::Prefix => (
@@ -115,10 +115,10 @@ impl HunspellDict {
                     code,
                     afx.substandard,
                     afx.circumfix,
-                );
+                )?;
             }
         }
-        content
+        Ok(content)
     }
 }
 
@@ -257,7 +257,7 @@ fn build_single_affix_rule_string(
     code: FlagCode,
     substandard: bool,
     circumfix: bool,
-) -> String {
+) -> Result<String> {
     let strip: &str = match &rule.strip {
         Some(s) => s,
         None => "0",
@@ -278,32 +278,34 @@ fn build_single_affix_rule_string(
     }
     affix_flags.sort();
     let mut content: String = format!("{} {}   {} {}", affix_str, code, strip, rule.add);
-    content += &build_affix_flag_string(&affix_flags, affix_code_map);
+    content += &build_affix_flag_string(&affix_flags, affix_code_map)?;
     content += &format!(" {}\n", cond);
-    content
+    Ok(content)
 }
 
 fn build_affix_flag_string(
     affix_flags: &[String],
     affix_code_map: &HashMap<String, FlagCode>,
-) -> String {
+) -> Result<String> {
     if affix_flags.is_empty() {
-        return "".to_string();
+        return Ok("".to_string());
     }
     let mut content: String = "/".to_string();
     for flag in affix_flags.iter().take(affix_flags.len() - 1) {
         if !affix_code_map.contains_key(flag) {
-            panic!("No flag code for {}", flag);
+            let e: Error = Error::msg(format!("No flag code for {}", flag));
+            return Err(e);
         }
         let code: FlagCode = affix_code_map[flag];
         content += &format!("{},", code)
     }
     if let Some(flag) = affix_flags.last() {
         if !affix_code_map.contains_key(flag) {
-            panic!("No flag code for {}", flag);
+            let e: Error = Error::msg(format!("No flag code for {}", flag));
+            return Err(e);
         }
         let code: FlagCode = affix_code_map[flag];
         content += &format!("{}", code);
     }
-    content
+    Ok(content)
 }

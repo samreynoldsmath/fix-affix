@@ -29,7 +29,7 @@ impl HunspellDict {
 
         let code_map: CodeMap = CodeMap::new(&sorted_prefix_keys, &sorted_suffix_keys)?;
 
-        let used_flags: Vec<FlagCode> = self.get_used_flags(&code_map);
+        let used_flags: Vec<FlagCode> = self.get_used_flags(&code_map)?;
 
         self.derived = DerivedDictData {
             sorted_prefix_keys,
@@ -40,10 +40,10 @@ impl HunspellDict {
         Ok(())
     }
 
-    fn get_used_flags(&self, code_map: &CodeMap) -> Vec<FlagCode> {
+    fn get_used_flags(&self, code_map: &CodeMap) -> Result<Vec<FlagCode>> {
         let mut used_flags: Vec<FlagCode> = vec![];
         for word in &self.entry {
-            let codes: Vec<FlagCode> = word.collect_flag_codes(code_map);
+            let codes: Vec<FlagCode> = word.collect_flag_codes(code_map)?;
             for code in codes {
                 if code.0 >= MAX_CONFIG_CODE {
                     continue;
@@ -54,7 +54,7 @@ impl HunspellDict {
             }
         }
         used_flags.sort_by_key(|code| code.0);
-        used_flags
+        Ok(used_flags)
     }
 }
 
@@ -103,7 +103,7 @@ fn get_affix_code_map(
 }
 
 impl DictEntry {
-    pub(crate) fn collect_flag_codes(&self, code_map: &CodeMap) -> Vec<FlagCode> {
+    pub(crate) fn collect_flag_codes(&self, code_map: &CodeMap) -> Result<Vec<FlagCode>> {
         let mut entry_codes: Vec<FlagCode> = vec![];
 
         for (key, code) in &code_map.cfg_map {
@@ -114,19 +114,21 @@ impl DictEntry {
 
         for p in &self.prefix {
             if !code_map.pfx_map.contains_key(p) {
-                panic!("Unknown prefix key: {}", p);
+                let e: Error = Error::msg(format!("Unknown prefix key: {}", p));
+                return Err(e);
             }
             entry_codes.push(code_map.pfx_map[p]);
         }
 
         for s in &self.suffix {
             if !code_map.sfx_map.contains_key(s) {
-                panic!("Unknown suffix key: {}", s);
+                let e: Error = Error::msg(format!("Unknown suffix key: {}", s));
+                return Err(e);
             }
             entry_codes.push(code_map.sfx_map[s]);
         }
 
-        entry_codes
+        Ok(entry_codes)
     }
 
     fn match_entry_option_to_key(&self, key: &str) -> bool {

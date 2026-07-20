@@ -5,22 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [0.2.0]
 
 ### Added
-- [x] Add support for keywords:
-    - [x] CHECKSHARPS
-    - [x] FULLSTRIP
-    - [x] KEY
-    - [x] MAP
-    - [x] OCONV
-    - [x] PHONE
-- [x] Add `clap` to dependencies
-- [x] Add support for `--help` and `--version` flags
+- Add support for keywords:
+    - CHECKSHARPS
+    - FULLSTRIP
+    - KEY
+    - MAP
+    - OCONV
+    - PHONE
+- Add `clap` to dependencies
+- Add support for `--help` and `--version` flags
 
 ### Changed
-- [x] Clarify in README which keywords are and are not supported
-- [x] Update example to reflect changes
+- Clarify in README which keywords are and are not supported
+- Update example to reflect changes
+- Improve error handling, avoid panicking
+
 
 ## [0.1.1]
 
