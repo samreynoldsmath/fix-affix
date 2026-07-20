@@ -7,7 +7,9 @@ mod types;
 mod write;
 
 pub use types::HunspellDict;
-use types::{Affix, CodeMap, CondReplace, DerivedDictData, DictConfig, DictEntry, FlagCode};
+use types::{
+    Affix, CodeMap, CondReplace, DerivedDictData, DictConfig, DictEntry, FlagCode, Replace,
+};
 
 const VERSION: &str = "0.1.1";
 

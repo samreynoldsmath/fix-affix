@@ -40,15 +40,19 @@ pub(crate) struct DictConfig {
     pub(crate) ignore_characters: String,
     pub(crate) try_characters: String,
     pub(crate) key_characters: Vec<String>,
-    pub(crate) map_characters: Vec<Replace>,
     pub(crate) max_n_gram_suggestions: u8,
     pub(crate) max_diff: u8,
     pub(crate) only_max_diff: bool,
     pub(crate) no_split_suggestions: bool,
     pub(crate) suggest_with_dots: bool,
     pub(crate) forbid_warn: bool,
-    pub(crate) input_conversion: Vec<Replace>,
     pub(crate) replace: Vec<Replace>,
+    pub(crate) phonetic_replace: Vec<Replace>,
+    pub(crate) input_conversion: Vec<Replace>,
+    pub(crate) output_conversion: Vec<Replace>,
+    pub(crate) map_characters: Vec<Replace>,
+    pub(crate) full_strip: bool,
+    pub(crate) check_sharps: bool,
 }
 
 #[derive(Debug, Default, Deserialize)]

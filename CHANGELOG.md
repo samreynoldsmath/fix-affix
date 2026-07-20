@@ -8,7 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 ## [Unreleased]
 
 ### Added
-- [x] Add support for the `KEY` and `MAP` keywords
+- [x] Add support for keywords:
+    - [x] CHECKSHARPS
+    - [x] FULLSTRIP
+    - [x] KEY
+    - [x] MAP
+    - [x] OCONV
+    - [x] PHONE
 - [x] Clarify in README which keywords are  and are not supported
 - [x] Update example to reflect changes
 - [ ] Add documentation on panics

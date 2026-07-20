@@ -1,4 +1,4 @@
-use crate::{Affix, CondReplace, DerivedDictData, DictConfig, FlagCode, HunspellDict};
+use crate::{Affix, CondReplace, DerivedDictData, DictConfig, FlagCode, HunspellDict, Replace};
 use crate::{DATE_FMT, REPO_URL, VERSION};
 use anyhow::Result;
 use chrono::prelude::{Local, Utc};
@@ -53,8 +53,10 @@ impl HunspellDict {
         content += &self.derived.build_flag_keys_string();
         content += &self.build_affix_rules_string(AffixType::Prefix);
         content += &self.build_affix_rules_string(AffixType::Suffix);
-        content += &self.build_replacements_string();
-        content += &self.build_map_string();
+        content += &build_replacements_string(&self.config.replace, "REP", replace_formatter);
+        content +=
+            &build_replacements_string(&self.config.phonetic_replace, "PHONE", replace_formatter);
+        content += &build_replacements_string(&self.config.map_characters, "MAP", map_formatter);
         content
     }
 
@@ -118,37 +120,44 @@ impl HunspellDict {
         }
         content
     }
+}
 
-    fn build_replacements_string(&self) -> String {
-        if self.config.replace.is_empty() {
-            return "".to_string();
-        }
-        let num_reps: usize = self.config.replace.len();
-        let mut content: String = format!("\nREP {}\n", num_reps);
-        for r in &self.config.replace {
-            let rm: String = r.remove.replace(" ", "_");
-            let add: String = r.add.replace(" ", "_");
-            content += &format!("REP {} {}\n", rm, add);
-        }
-        content
+fn build_replacements_string(
+    reps: &Vec<Replace>,
+    keyword: &str,
+    formatter: fn(&str, &Replace) -> String,
+) -> String {
+    if reps.is_empty() {
+        return "".to_string();
     }
+    let num_reps: usize = reps.len();
+    let mut content: String = format!("\n{} {}\n", keyword, num_reps);
+    for rep in reps {
+        content += &formatter(keyword, rep);
+    }
+    content
+}
 
-    fn build_map_string(&self) -> String {
-        if self.config.map_characters.is_empty() {
-            return "".to_string();
-        }
-        let num_maps: usize = self.config.map_characters.len();
-        let mut content: String = format!("\nMAP {}\n", num_maps);
-        for r in &self.config.map_characters {
-            let rm: String = wrap_string_in_paren_if_len_not_one(&r.remove);
-            let add: String = wrap_string_in_paren_if_len_not_one(&r.add);
-            content += &format!("MAP {}{}\n", rm, add);
-        }
-        content
-    }
+fn map_formatter(keyword: &str, rep: &Replace) -> String {
+    let rm: String = wrap_string_in_paren_if_len_not_one(&rep.remove);
+    let add: String = wrap_string_in_paren_if_len_not_one(&rep.add);
+    format!("{} {}{}\n", keyword, rm, add)
 }
 
 fn wrap_string_in_paren_if_len_not_one(s: &str) -> String {
+    match s.chars().count() {
+        1 => s.to_string(),
+        _ => format!("({})", s),
+    }
+}
+
+fn replace_formatter(keyword: &str, rep: &Replace) -> String {
+    let rm: String = replace_space_with_underscore(&rep.remove);
+    let add: String = replace_space_with_underscore(&rep.add);
+    format!("{} {} {}\n", keyword, rm, add)
+}
+
+fn replace_space_with_underscore(s: &str) -> String {
     match s.chars().count() {
         1 => s.to_string(),
         _ => format!("({})", s),
@@ -206,10 +215,22 @@ impl DictConfig {
         if self.forbid_warn {
             content += "FORBIDWARN\n";
         }
+        if self.full_strip {
+            content += "FULLSTRIP\n";
+        }
+        if self.check_sharps {
+            content += "CHECKSHARPS\n";
+        }
         if !self.input_conversion.is_empty() {
             content += &format!("ICONV {}\n", self.input_conversion.len());
             for iconv in &self.input_conversion {
                 content += &format!("ICONV {} {}\n", iconv.remove, iconv.add);
+            }
+        }
+        if !self.output_conversion.is_empty() {
+            content += &format!("OCONV {}\n", self.output_conversion.len());
+            for oconv in &self.output_conversion {
+                content += &format!("OCONV {} {}\n", oconv.remove, oconv.add);
             }
         }
         content

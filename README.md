@@ -183,7 +183,7 @@ The `[config]` table holds the data needed to configure the `.aff` file options.
 |CHECKCOMPOUNDPATTERN|🔜
 |CHECKCOMPOUNDREP|🔜
 |CHECKCOMPOUNDTRIPLE|🔜
-|CHECKSHARPS|🔜
+|CHECKSHARPS|v0.2.0|`check_sharps`|Boolean|Specific flag for German ß
 |COMPLEXPREFIXES|v0.1.0|`complex_prefixes`|Boolean|Allow stacking of two prefixes and disable stacking of suffixes
 |COMPOUNDMIN|🔜
 |COMPOUNDMORESUFFIXES|🔜
@@ -192,7 +192,7 @@ The `[config]` table holds the data needed to configure the `.aff` file options.
 |COMPOUNDWORDMAX|🔜
 |FORBIDWARN|v0.1.0|`forbid_warn`|Boolean|Words with the `warn` | *WARN* flag are not accepted as correctly spelled
 |FLAG|❌|||All generated Hunspell dictionaries use integer flags with `FLAG num`
-|FULLSTRIP|🔜
+|FULLSTRIP|v0.2.0|`full_strip`|Boolean|Allows affix rules to strip an entire word
 |ICONV|v0.1.0|`input_conversion`|Array of tables|Defines character conversions prior to applying the spell checker; each element of the array is a table with two entries, `remove` and `add`, whose values are strings
 |IGNORE|v0.1.0|`ignore_characters`|String|Characters that will be ignored in dictionary words
 |KEY|v0.2.0|`key_characters`|Array of strings|Groups of character replacements based on keyboard layout
@@ -202,9 +202,9 @@ The `[config]` table holds the data needed to configure the `.aff` file options.
 |MAXDIFF|v0.1.0|`max_diff`|Integers 1 - 10|Similarity factor for n-gram suggestions
 |MAXNGRAMSUGS|v0.1.0|`max_n_gram_suggestions`|Unsigned integer|Maximum number of n-gram suggestions
 |NOSPLITSUGS|v0.1.0|`no_split_suggestions`|Boolean|Disable word suggestions with spaces
-|OCONV|🔜
+|OCONV|v0.2.0|`output_conversion`|Array of tables|Defines character conversions after applying the spell checker; each element of the array is a table with two entries, `remove` and `add`, whose values are strings
 |ONLYMAXDIFF|v0.1.0|`only_max_diff`|Boolean|Remove all bad n-gram suggestions
-|PHONE|🔜
+|PHONE|v0.2.0|`phonetic_replace`|Array of tables|Defines a phonetic transcription replacement table; each table entry has an `add` and `remove` field whose values are strings
 |REP|v0.1.0|`replace`|Array of tables|Defines alternative spelling patterns for common misspellings; `replace` is an array of tables, each having an `add` and `remove` field whose values are strings
 |SET|v0.1.0|`encoding`|String|The character encoding of the dictionary
 |SIMPLIFIEDTRIPLE|🔜
