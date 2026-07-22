@@ -9,16 +9,18 @@ authors = [
 
 [config]
 encoding = "UTF-8"
-additional_word_characters = "'üß"
-try_characters = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
-key_characters = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
-map_characters = [
+complex_prefixes = true
+
+[config.characters]
+additional = "'üß"
+try_order = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
+key_groups = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
+remap = [
     {remove = "u", add = "ü"},
     {remove = "ss", add = "ß"}
 ]
-complex_prefixes = true
 input_conversion = [{remove = "’", add = "'"}]
-replace = [
+try_replace = [
     {remove = "ie", add = "ei"},
     {remove = "alot", add = "a lot"},
 ]

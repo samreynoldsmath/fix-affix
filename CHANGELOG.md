@@ -42,7 +42,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
     - `config.phonetic_replace` -> `config.characters.phonetic_replace`
     - `config.input_conversion` -> `config.characters.input_conversion`
     - `config.output_conversion` -> `config.characters.output_conversion`
+- Allow affix rule `add` field to be empty as long as `strip` is not also empty
 
+### Fixed
+- Fixed inaccessible `CIRCUMFIX` and `SUBSTANDARD` affix options
+- Fixed incorrect formatting for `REP` strings
 
 ## [0.2.0]
 

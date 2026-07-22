@@ -1,14 +1,11 @@
-use crate::{Affix, CondReplace, DerivedDictData, DictConfig, FlagCode, HunspellDict, Replace};
+use crate::{
+    Affix, AffixRule, AffixType, CodeMap, DerivedDictData, DictConfig, FlagCode, HunspellDict,
+    Replace,
+};
 use crate::{DATE_FMT, REPO_URL};
-use anyhow::{Error, Result};
+use anyhow::Result;
 use chrono::prelude::{Local, Utc};
-use std::collections::HashMap;
 use std::{fs, path::Path};
-
-enum AffixType {
-    Prefix,
-    Suffix,
-}
 
 impl HunspellDict {
     /// Writes the .dic file
@@ -102,21 +99,26 @@ impl HunspellDict {
                 &self.derived.code_map.sfx_map,
             ),
         };
-        for k in affix_keys {
-            let afx: Affix = affixes[k].clone();
+        for key in affix_keys {
+            let afx: Affix = affixes[key].clone();
             let num_rules: usize = afx.rules.len();
             if num_rules == 0 {
                 continue;
             }
-            let code: FlagCode = affix_code_map[k];
+            let code: FlagCode = affix_code_map[key];
             let cross_prod: &str = match afx.cross_product {
                 true => "Y",
                 false => "N",
             };
             content += &format!("\n{} {} {} {}\n", affix_str, code, cross_prod, num_rules);
             for rule in &afx.rules {
-                content +=
-                    &build_single_affix_rule_string(rule, affix_code_map, affix_str, code, &afx)?;
+                content += &build_single_affix_rule_string(
+                    &self.derived.code_map,
+                    code,
+                    rule,
+                    affix_str,
+                    &affix_type,
+                )?;
             }
         }
         Ok(content)
@@ -159,10 +161,7 @@ fn replace_formatter(keyword: &str, rep: &Replace) -> String {
 }
 
 fn replace_space_with_underscore(s: &str) -> String {
-    match s.chars().count() {
-        1 => s.to_string(),
-        _ => format!("({})", s),
-    }
+    s.replace(" ", "_")
 }
 
 impl DictConfig {
@@ -279,64 +278,44 @@ impl DerivedDictData {
 }
 
 fn build_single_affix_rule_string(
-    rule: &CondReplace,
-    affix_code_map: &HashMap<String, FlagCode>,
-    affix_str: &str,
+    code_map: &CodeMap,
     code: FlagCode,
-    afx: &Affix,
+    rule: &AffixRule,
+    affix_str: &str,
+    affix_type: &AffixType,
 ) -> Result<String> {
-    let strip: &str = match &rule.strip {
-        Some(s) => s,
-        None => "0",
+    let strip: &str = match rule.strip.is_empty() {
+        true => "0",
+        false => &rule.strip,
     };
-    let cond: &str = match &rule.cond {
-        Some(s) => s,
-        None => ".",
+    let add: &str = match rule.add.is_empty() {
+        true => "0",
+        false => &rule.add,
     };
-    let mut content: String = format!("{} {}   {} {}", affix_str, code, strip, rule.add);
-    let affix_flag_keys: Vec<String> = build_sorted_affix_flag_keys(afx, rule);
-    content += &build_affix_flag_string(&affix_flag_keys, affix_code_map)?;
+    let cond: &str = match rule.cond.is_empty() {
+        true => ".",
+        false => &rule.cond,
+    };
+    let mut content: String = format!("{} {}   {} {}", affix_str, code, strip, add);
+    content += &build_affix_flag_string(code_map, rule, affix_type)?;
     content += &format!(" {}\n", cond);
     Ok(content)
 }
 
-fn build_sorted_affix_flag_keys(afx: &Affix, rule: &CondReplace) -> Vec<String> {
-    let mut affix_flag_keys: Vec<String> = match &rule.stack {
-        Some(stacks) => stacks.clone(),
-        None => vec![],
-    };
-    if afx.substandard {
-        affix_flag_keys.push("substandard".to_string());
-    }
-    if afx.circumfix {
-        affix_flag_keys.push("circumfix".to_string());
-    }
-    affix_flag_keys.sort();
-    affix_flag_keys
-}
-
 fn build_affix_flag_string(
-    affix_flag_keys: &[String],
-    affix_code_map: &HashMap<String, FlagCode>,
+    code_map: &CodeMap,
+    rule: &AffixRule,
+    affix_type: &AffixType,
 ) -> Result<String> {
-    if affix_flag_keys.is_empty() {
+    let flag_codes: Vec<FlagCode> = rule.collect_flag_codes(code_map, affix_type)?;
+    if flag_codes.is_empty() {
         return Ok("".to_string());
     }
     let mut content: String = "/".to_string();
-    for key in affix_flag_keys.iter().take(affix_flag_keys.len() - 1) {
-        if !affix_code_map.contains_key(key) {
-            let e: Error = Error::msg(format!("No flag code for {}", key));
-            return Err(e);
-        }
-        let code: FlagCode = affix_code_map[key];
+    for code in flag_codes.iter().take(flag_codes.len() - 1) {
         content += &format!("{},", code)
     }
-    if let Some(key) = affix_flag_keys.last() {
-        if !affix_code_map.contains_key(key) {
-            let e: Error = Error::msg(format!("No flag code for {}", key));
-            return Err(e);
-        }
-        let code: FlagCode = affix_code_map[key];
+    if let Some(code) = flag_codes.last() {
         content += &format!("{}", code);
     }
     Ok(content)

@@ -49,16 +49,18 @@ authors = [
 
 [config]
 encoding = "UTF-8"
-additional_word_characters = "'üß"
-try_characters = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
-key_characters = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
-map_characters = [
+complex_prefixes = true
+
+[config.characters]
+additional = "'üß"
+try_order = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
+key_groups = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
+remap = [
     {remove = "u", add = "ü"},
     {remove = "ss", add = "ß"}
 ]
-complex_prefixes = true
 input_conversion = [{remove = "’", add = "'"}]
-replace = [
+try_replace = [
     {remove = "ie", add = "ei"},
     {remove = "alot", add = "a lot"},
 ]
@@ -223,16 +225,20 @@ The prefixes are stored in a table `[prefix]`, with each entry itself being a ta
 |Y / N|v0.1.0|`cross_product`|Boolean|**True by default.** If true, this prefix is permitted to be combined with suffixes
 |CIRCUMFIX|v0.1.0|`circumfix`|Boolean|If true, this prefix (or suffix) can only be applied when a suffix (or prefix) with the `circumfix` flag is also applied
 |SUBSTANDARD|v0.1.0|`substandard`|Boolean|Any word with the prefix will not be suggested or used in morphological analysis
+|COMPOUNDFLAG|v0.3.0|`compound`|Boolean|Affixed word permitted to appear in a compound word
+|COMPOUNDFORBIDFLAG|v0.3.0|`compound_forbid`|Boolean|Suffixes with this flag forbid compounding of the affixed word
 
 #### Affix Rule Table
 The table `[prefix.<prefix-key>.rules]` has the following entries:
 
 |Hunspell notation  |Supported  |TOML table key     |TOML data type     | Description
 |-------------------|-----------|-------------------|-------------------|------------
-|PFX / SFX|v0.1.0|`add`|String|**Required:** The characters to be appended
+|PFX / SFX|v0.1.0|`add`|String|The characters to be appended
 |PFX / SFX|v0.1.0|`strip`|String|The characters to be removed prior to appending
 |PFX / SFX|v0.1.0|`cond`|String|The conditions for when the rule can be applied, specified using the same regex notation as Hunspell
 |PFX / SFX|v0.1.0|`stack`|Array of strings|If `config.complex_prefixes = true`, each string in `stack` is the key of another `prefix` table that is permitted to be secondarily appended; if `config.complex_prefixes = false`, this instead applies to `suffix`
+
+**Note:** A 'degenerate' rule with `add` and `strip` both being empty will result in an error.
 
 ### Entries
 `[entry]` is an array of tables defining words and word stems, along with several flags that determine how they interact with affixes:
@@ -242,8 +248,8 @@ The table `[prefix.<prefix-key>.rules]` has the following entries:
 |`<stem>/<flags>`|v0.1.0|`stem`|String|The word or word stem
 |`<stem>/<flags>`|v0.1.0|`prefix`|Array of strings|The keys of each prefix table that can be applied to the stem
 |`<stem>/<flags>`|v0.1.0|`suffix`|Array of strings|The keys of each suffix table that can be applied to the stem
-|COMPOUNDFLAG|🔜
-|COMPOUNDFORBIDFLAG|🔜
+|COMPOUNDFLAG|v0.3.0|`compound`|Boolean|Word permitted to appear in a compound word
+|COMPOUNDFORBIDFLAG|v0.3.0|`compound_forbid`|Boolean|Dictionary words with this flag are removed from the beginning and middle of compound words
 |COMPOUNDBEGIN|🔜
 |COMPOUNDLAST|🔜
 |COMPOUNDMIDDLE|🔜

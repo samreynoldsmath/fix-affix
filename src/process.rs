@@ -1,4 +1,6 @@
-use crate::{Affix, CodeMap, DerivedDictData, DictEntry, FlagCode, HunspellDict};
+use crate::{
+    Affix, AffixRule, AffixType, CodeMap, DerivedDictData, DictEntry, FlagCode, HunspellDict,
+};
 use anyhow::{Error, Result};
 use std::collections::HashMap;
 
@@ -20,6 +22,84 @@ fn get_config_code_map() -> Vec<(String, FlagCode)> {
     }
 
     flag_codes
+}
+
+impl DictEntry {
+    fn match_entry_option_to_key(&self, key: &str) -> bool {
+        (self.no_suggest && key == "NOSUGGEST")
+            || (self.warn && key == "WARN")
+            || (self.forbidden_word && key == "FORBIDDENWORD")
+            || (self.keep_case && key == "KEEPCASE")
+            || (self.need_affix && key == "NEEDAFFIX")
+            || (self.substandard && key == "SUBSTANDARD")
+    }
+
+    pub(crate) fn collect_flag_codes(&self, code_map: &CodeMap) -> Result<Vec<FlagCode>> {
+        let mut entry_codes: Vec<FlagCode> = vec![];
+
+        for (key, code) in &code_map.cfg_map {
+            if self.match_entry_option_to_key(key) {
+                entry_codes.push(*code);
+            }
+        }
+
+        for p in &self.prefix {
+            if !code_map.pfx_map.contains_key(p) {
+                let e: Error = Error::msg(format!("Unknown prefix key: {}", p));
+                return Err(e);
+            }
+            entry_codes.push(code_map.pfx_map[p]);
+        }
+
+        for s in &self.suffix {
+            if !code_map.sfx_map.contains_key(s) {
+                let e: Error = Error::msg(format!("Unknown suffix key: {}", s));
+                return Err(e);
+            }
+            entry_codes.push(code_map.sfx_map[s]);
+        }
+
+        entry_codes.sort_by_key(|k| k.0);
+
+        Ok(entry_codes)
+    }
+}
+
+impl AffixRule {
+    fn match_entry_option_to_key(&self, key: &str) -> bool {
+        (self.substandard && key == "SUBSTANDARD") || (self.circumfix && key == "CIRCUMFIX")
+    }
+
+    pub(crate) fn collect_flag_codes(
+        &self,
+        code_map: &CodeMap,
+        affix_type: &AffixType,
+    ) -> Result<Vec<FlagCode>> {
+        let mut entry_codes: Vec<FlagCode> = vec![];
+
+        for (key, code) in &code_map.cfg_map {
+            if self.match_entry_option_to_key(key) {
+                entry_codes.push(*code);
+            }
+        }
+
+        let afx_map: &HashMap<String, FlagCode> = match affix_type {
+            AffixType::Prefix => &code_map.pfx_map,
+            AffixType::Suffix => &code_map.sfx_map,
+        };
+
+        for a in &self.stack {
+            if !afx_map.contains_key(a) {
+                let e: Error = Error::msg(format!("Unknown affix key: {:?}: {}", affix_type, a));
+                return Err(e);
+            }
+            entry_codes.push(afx_map[a]);
+        }
+
+        entry_codes.sort_by_key(|k| k.0);
+
+        Ok(entry_codes)
+    }
 }
 
 impl HunspellDict {
@@ -45,11 +125,30 @@ impl HunspellDict {
         for word in &self.entry {
             let codes: Vec<FlagCode> = word.collect_flag_codes(code_map)?;
             for code in codes {
-                if code.0 >= MAX_CONFIG_CODE {
-                    continue;
-                }
                 if !used_flags.contains(&code) {
                     used_flags.push(code);
+                }
+            }
+        }
+        for (affix_map, affix_type) in [
+            (&self.prefix, AffixType::Prefix),
+            (&self.suffix, AffixType::Suffix),
+        ] {
+            for (key, afx) in affix_map {
+                for rule in &afx.rules {
+                    if rule.add.is_empty() && rule.strip.is_empty() {
+                        let e: Error = Error::msg(format!(
+                            "Degenerate affix rule: {:?}: {}",
+                            affix_type, key,
+                        ));
+                        return Err(e);
+                    }
+                    let codes: Vec<FlagCode> = rule.collect_flag_codes(code_map, &affix_type)?;
+                    for code in codes {
+                        if !used_flags.contains(&code) {
+                            used_flags.push(code);
+                        }
+                    }
                 }
             }
         }
@@ -65,7 +164,10 @@ impl CodeMap {
 
         let total_num_flags: usize = MAX_CONFIG_CODE as usize + num_pfx + num_sfx;
         if total_num_flags > MAX_FLAGS {
-            let e: Error = Error::msg("Total number of flags cannot exceed 65,000");
+            let e: Error = Error::msg(format!(
+                "Total number of flags {} exceeds maximum possible {}",
+                total_num_flags, MAX_CONFIG_CODE
+            ));
             return Err(e);
         }
 
@@ -100,43 +202,4 @@ fn get_affix_code_map(
         flag_codes.insert(a.to_string(), FlagCode(i));
     }
     flag_codes
-}
-
-impl DictEntry {
-    pub(crate) fn collect_flag_codes(&self, code_map: &CodeMap) -> Result<Vec<FlagCode>> {
-        let mut entry_codes: Vec<FlagCode> = vec![];
-
-        for (key, code) in &code_map.cfg_map {
-            if self.match_entry_option_to_key(key) {
-                entry_codes.push(*code);
-            }
-        }
-
-        for p in &self.prefix {
-            if !code_map.pfx_map.contains_key(p) {
-                let e: Error = Error::msg(format!("Unknown prefix key: {}", p));
-                return Err(e);
-            }
-            entry_codes.push(code_map.pfx_map[p]);
-        }
-
-        for s in &self.suffix {
-            if !code_map.sfx_map.contains_key(s) {
-                let e: Error = Error::msg(format!("Unknown suffix key: {}", s));
-                return Err(e);
-            }
-            entry_codes.push(code_map.sfx_map[s]);
-        }
-
-        Ok(entry_codes)
-    }
-
-    fn match_entry_option_to_key(&self, key: &str) -> bool {
-        (self.no_suggest && key == "NOSUGGEST")
-            || (self.warn && key == "WARN")
-            || (self.forbidden_word && key == "FORBIDDENWORD")
-            || (self.keep_case && key == "KEEPCASE")
-            || (self.need_affix && key == "NEEDAFFIX")
-            || (self.substandard && key == "SUBSTANDARD")
-    }
 }

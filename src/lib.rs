@@ -8,7 +8,7 @@ mod write;
 
 pub use types::HunspellDict;
 use types::{
-    Affix, CodeMap, CondReplace, DerivedDictData, DictConfig, DictEntry, FlagCode, Replace,
+    Affix, AffixRule, AffixType, CodeMap, DerivedDictData, DictConfig, DictEntry, FlagCode, Replace,
 };
 
 const REPO_URL: &str = "https://github.com/samreynoldsmath/fix-affix";

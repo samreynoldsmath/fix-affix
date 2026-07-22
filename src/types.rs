@@ -49,7 +49,7 @@ pub(crate) struct DictConfig {
 }
 
 #[derive(Debug, Default, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serde(deny_unknown_fields, default)]
 pub(crate) struct CharacterConfig {
     pub(crate) additional: String,
     pub(crate) ignore: String,
@@ -63,7 +63,7 @@ pub(crate) struct CharacterConfig {
 }
 
 #[derive(Debug, Default, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serde(deny_unknown_fields, default)]
 pub(crate) struct CompoundConfig {
     pub(crate) check_case: bool,
     pub(crate) check_duplicate: bool,
@@ -85,8 +85,8 @@ pub(crate) struct DictMetadata {
     pub(crate) authors: Vec<String>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Clone, Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields, default)]
 pub(crate) struct Replace {
     pub(crate) remove: String,
     pub(crate) add: String,
@@ -106,23 +106,29 @@ pub(crate) struct DictEntry {
     pub(crate) substandard: bool,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-#[serde(deny_unknown_fields)]
-pub(crate) struct CondReplace {
+#[derive(Debug)]
+pub enum AffixType {
+    Prefix,
+    Suffix,
+}
+
+#[derive(Debug, Deserialize, Default, Clone)]
+#[serde(deny_unknown_fields, default)]
+pub(crate) struct AffixRule {
     pub(crate) add: String,
-    pub(crate) strip: Option<String>,
-    pub(crate) cond: Option<String>,
-    pub(crate) stack: Option<Vec<String>>,
+    pub(crate) strip: String,
+    pub(crate) cond: String,
+    pub(crate) stack: Vec<String>,
+    pub(crate) circumfix: bool,
+    pub(crate) substandard: bool,
 }
 
 #[derive(Debug, Default, Deserialize, Clone)]
 #[serde(deny_unknown_fields, default)]
 pub struct Affix {
-    pub(crate) rules: Vec<CondReplace>,
+    pub(crate) rules: Vec<AffixRule>,
     #[serde(default = "bool_true")]
     pub(crate) cross_product: bool,
-    pub(crate) circumfix: bool,
-    pub(crate) substandard: bool,
 }
 
 fn bool_true() -> bool {
