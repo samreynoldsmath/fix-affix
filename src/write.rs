@@ -53,10 +53,17 @@ impl HunspellDict {
         content += &self.derived.build_flag_keys_string();
         content += &self.build_affix_rules_string(AffixType::Prefix)?;
         content += &self.build_affix_rules_string(AffixType::Suffix)?;
-        content += &build_replacements_string(&self.config.replace, "REP", replace_formatter);
-        content +=
-            &build_replacements_string(&self.config.phonetic_replace, "PHONE", replace_formatter);
-        content += &build_replacements_string(&self.config.map_characters, "MAP", map_formatter);
+        content += &build_replacements_string(
+            &self.config.characters.try_replace,
+            "REP",
+            replace_formatter,
+        );
+        content += &build_replacements_string(
+            &self.config.characters.phonetic_replace,
+            "PHONE",
+            replace_formatter,
+        );
+        content += &build_replacements_string(&self.config.characters.remap, "MAP", map_formatter);
         Ok(content)
     }
 
@@ -108,14 +115,8 @@ impl HunspellDict {
             };
             content += &format!("\n{} {} {} {}\n", affix_str, code, cross_prod, num_rules);
             for rule in &afx.rules {
-                content += &build_single_affix_rule_string(
-                    rule,
-                    affix_code_map,
-                    affix_str,
-                    code,
-                    afx.substandard,
-                    afx.circumfix,
-                )?;
+                content +=
+                    &build_single_affix_rule_string(rule, affix_code_map, affix_str, code, &afx)?;
             }
         }
         Ok(content)
@@ -170,8 +171,8 @@ impl DictConfig {
         if !self.encoding.is_empty() {
             content += &format!("SET {}\n", self.encoding);
         };
-        if !self.additional_word_characters.is_empty() {
-            content += &format!("WORDCHARS {}\n", self.additional_word_characters);
+        if !self.characters.additional.is_empty() {
+            content += &format!("WORDCHARS {}\n", self.characters.additional);
         };
         if self.complex_prefixes {
             content += "COMPLEXPREFIXES\n"
@@ -179,20 +180,20 @@ impl DictConfig {
         if !self.language_code.is_empty() {
             content += &format!("LANG {}\n", self.language_code);
         }
-        if !self.ignore_characters.is_empty() {
-            content += &format!("IGNORE {}\n", self.ignore_characters);
+        if !self.characters.ignore.is_empty() {
+            content += &format!("IGNORE {}\n", self.characters.ignore);
         }
-        if !self.try_characters.is_empty() {
-            content += &format!("TRY {}\n", self.try_characters);
+        if !self.characters.try_order.is_empty() {
+            content += &format!("TRY {}\n", self.characters.try_order);
         }
-        if !self.key_characters.is_empty() {
+        if !self.characters.key_groups.is_empty() {
             content += "KEY ";
-            let n: usize = self.key_characters.len();
-            for char_group in self.key_characters.iter().take(n - 1) {
+            let n: usize = self.characters.key_groups.len();
+            for char_group in self.characters.key_groups.iter().take(n - 1) {
                 content += char_group;
                 content += "|";
             }
-            if let Some(char_group) = self.key_characters.last() {
+            if let Some(char_group) = self.characters.key_groups.last() {
                 content += char_group;
             }
             content += "\n";
@@ -221,42 +222,42 @@ impl DictConfig {
         if self.check_sharps {
             content += "CHECKSHARPS\n";
         }
-        if self.check_compound_case {
+        if self.compound.check_case {
             content += "CHECKCOMPOUNDCASE\n";
         }
-        if self.check_compound_duplicate {
+        if self.compound.check_duplicate {
             content += "CHECKCOMPOUNDDUP\n";
         }
-        if self.check_compound_replace {
+        if self.compound.check_replace {
             content += "CHECKCOMPOUNDREP\n";
         }
-        if self.check_compound_triple {
+        if self.compound.check_triple {
             content += "CHECKCOMPOUNDTRIPLE\n";
         }
-        if self.compound_more_suffixes {
+        if self.compound.more_suffixes {
             content += "COMPOUNDMORESUFFIXES\n";
         }
-        if self.compound_simplified_triple {
+        if self.compound.simplified_triple {
             content += "SIMPLIFIEDTRIPLE\n";
         }
-        if self.compound_min_char > 0 {
-            content += &format!("COMPOUNDMIN {}\n", self.compound_min_char);
+        if self.compound.min_char > 0 {
+            content += &format!("COMPOUNDMIN {}\n", self.compound.min_char);
         }
-        if self.compound_max_word > 0 {
-            content += &format!("COMPOUNDWORDMAX {}\n", self.compound_max_word);
+        if self.compound.max_word > 0 {
+            content += &format!("COMPOUNDWORDMAX {}\n", self.compound.max_word);
         }
-        if self.max_compound_suggestions > 0 {
-            content += &format!("MAXCPDSUGS {}\n", self.max_compound_suggestions);
+        if self.compound.max_suggestions > 0 {
+            content += &format!("MAXCPDSUGS {}\n", self.compound.max_suggestions);
         }
-        if !self.input_conversion.is_empty() {
-            content += &format!("ICONV {}\n", self.input_conversion.len());
-            for iconv in &self.input_conversion {
+        if !self.characters.input_conversion.is_empty() {
+            content += &format!("ICONV {}\n", self.characters.input_conversion.len());
+            for iconv in &self.characters.input_conversion {
                 content += &format!("ICONV {} {}\n", iconv.remove, iconv.add);
             }
         }
-        if !self.output_conversion.is_empty() {
-            content += &format!("OCONV {}\n", self.output_conversion.len());
-            for oconv in &self.output_conversion {
+        if !self.characters.output_conversion.is_empty() {
+            content += &format!("OCONV {}\n", self.characters.output_conversion.len());
+            for oconv in &self.characters.output_conversion {
                 content += &format!("OCONV {} {}\n", oconv.remove, oconv.add);
             }
         }
@@ -282,8 +283,7 @@ fn build_single_affix_rule_string(
     affix_code_map: &HashMap<String, FlagCode>,
     affix_str: &str,
     code: FlagCode,
-    substandard: bool,
-    circumfix: bool,
+    afx: &Affix,
 ) -> Result<String> {
     let strip: &str = match &rule.strip {
         Some(s) => s,
@@ -293,45 +293,50 @@ fn build_single_affix_rule_string(
         Some(s) => s,
         None => ".",
     };
-    let mut affix_flags: Vec<String> = match &rule.stack {
-        Some(stacks) => stacks.clone(),
-        None => vec![],
-    };
-    if substandard {
-        affix_flags.push("substandard".to_string());
-    }
-    if circumfix {
-        affix_flags.push("circumfix".to_string());
-    }
-    affix_flags.sort();
     let mut content: String = format!("{} {}   {} {}", affix_str, code, strip, rule.add);
-    content += &build_affix_flag_string(&affix_flags, affix_code_map)?;
+    let affix_flag_keys: Vec<String> = build_sorted_affix_flag_keys(afx, rule);
+    content += &build_affix_flag_string(&affix_flag_keys, affix_code_map)?;
     content += &format!(" {}\n", cond);
     Ok(content)
 }
 
+fn build_sorted_affix_flag_keys(afx: &Affix, rule: &CondReplace) -> Vec<String> {
+    let mut affix_flag_keys: Vec<String> = match &rule.stack {
+        Some(stacks) => stacks.clone(),
+        None => vec![],
+    };
+    if afx.substandard {
+        affix_flag_keys.push("substandard".to_string());
+    }
+    if afx.circumfix {
+        affix_flag_keys.push("circumfix".to_string());
+    }
+    affix_flag_keys.sort();
+    affix_flag_keys
+}
+
 fn build_affix_flag_string(
-    affix_flags: &[String],
+    affix_flag_keys: &[String],
     affix_code_map: &HashMap<String, FlagCode>,
 ) -> Result<String> {
-    if affix_flags.is_empty() {
+    if affix_flag_keys.is_empty() {
         return Ok("".to_string());
     }
     let mut content: String = "/".to_string();
-    for flag in affix_flags.iter().take(affix_flags.len() - 1) {
-        if !affix_code_map.contains_key(flag) {
-            let e: Error = Error::msg(format!("No flag code for {}", flag));
+    for key in affix_flag_keys.iter().take(affix_flag_keys.len() - 1) {
+        if !affix_code_map.contains_key(key) {
+            let e: Error = Error::msg(format!("No flag code for {}", key));
             return Err(e);
         }
-        let code: FlagCode = affix_code_map[flag];
+        let code: FlagCode = affix_code_map[key];
         content += &format!("{},", code)
     }
-    if let Some(flag) = affix_flags.last() {
-        if !affix_code_map.contains_key(flag) {
-            let e: Error = Error::msg(format!("No flag code for {}", flag));
+    if let Some(key) = affix_flag_keys.last() {
+        if !affix_code_map.contains_key(key) {
+            let e: Error = Error::msg(format!("No flag code for {}", key));
             return Err(e);
         }
-        let code: FlagCode = affix_code_map[flag];
+        let code: FlagCode = affix_code_map[key];
         content += &format!("{}", code);
     }
     Ok(content)

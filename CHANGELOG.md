@@ -23,7 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
     - [x] SIMPLIFIEDTRIPLE
     - [ ] SYLLABLENUM
     - [ ] COMPOUNDFLAG
-    - [ ] COMPOUNDFORBIDGLAG
+    - [ ] COMPOUNDFORBIDFLAG
     - [ ] COMPOUNDBEGIN
     - [ ] COMPOUNDLAST
     - [ ] COMPOUNDMIDDLE
@@ -31,6 +31,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
     - [ ] COMPOUNDROOT
     - [ ] FORCECASE
     - [ ] ONLYINCOMPOUND
+
+### Changed
+- **Breaking:** The following TOML parameters have been renamed:
+    - `config.additional_word_characters` -> `config.characters.additional`
+    - `config.ignore_characters` -> `config.characters.ignore`
+    - `config.try_characters` -> `config.characters.try_order`
+    - `config.key_characters` -> `config.characters.key_groups`
+    - `config.map_characters` -> `config.characters.remap`
+    - `config.phonetic_replace` -> `config.characters.phonetic_replace`
+    - `config.input_conversion` -> `config.characters.input_conversion`
+    - `config.output_conversion` -> `config.characters.output_conversion`
 
 
 ## [0.2.0]

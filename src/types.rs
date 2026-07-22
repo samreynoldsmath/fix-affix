@@ -34,34 +34,46 @@ pub(crate) struct CodeMap {
 #[serde(deny_unknown_fields, default)]
 pub(crate) struct DictConfig {
     pub(crate) encoding: String,
-    pub(crate) additional_word_characters: String,
     pub(crate) complex_prefixes: bool,
     pub(crate) language_code: String,
-    pub(crate) ignore_characters: String,
-    pub(crate) try_characters: String,
-    pub(crate) key_characters: Vec<String>,
     pub(crate) max_n_gram_suggestions: u8,
     pub(crate) max_diff: u8,
     pub(crate) only_max_diff: bool,
     pub(crate) no_split_suggestions: bool,
     pub(crate) suggest_with_dots: bool,
     pub(crate) forbid_warn: bool,
-    pub(crate) replace: Vec<Replace>,
+    pub(crate) full_strip: bool,
+    pub(crate) check_sharps: bool,
+    pub(crate) characters: CharacterConfig,
+    pub(crate) compound: CompoundConfig,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct CharacterConfig {
+    pub(crate) additional: String,
+    pub(crate) ignore: String,
+    pub(crate) try_order: String,
+    pub(crate) key_groups: Vec<String>,
+    pub(crate) remap: Vec<Replace>,
+    pub(crate) try_replace: Vec<Replace>,
     pub(crate) phonetic_replace: Vec<Replace>,
     pub(crate) input_conversion: Vec<Replace>,
     pub(crate) output_conversion: Vec<Replace>,
-    pub(crate) map_characters: Vec<Replace>,
-    pub(crate) full_strip: bool,
-    pub(crate) check_sharps: bool,
-    pub(crate) check_compound_case: bool,
-    pub(crate) check_compound_duplicate: bool,
-    pub(crate) check_compound_replace: bool,
-    pub(crate) check_compound_triple: bool,
-    pub(crate) compound_more_suffixes: bool,
-    pub(crate) compound_simplified_triple: bool,
-    pub(crate) compound_min_char: u8,
-    pub(crate) compound_max_word: u8,
-    pub(crate) max_compound_suggestions: u8,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct CompoundConfig {
+    pub(crate) check_case: bool,
+    pub(crate) check_duplicate: bool,
+    pub(crate) check_replace: bool,
+    pub(crate) check_triple: bool,
+    pub(crate) more_suffixes: bool,
+    pub(crate) simplified_triple: bool,
+    pub(crate) min_char: u8,
+    pub(crate) max_word: u8,
+    pub(crate) max_suggestions: u8,
 }
 
 #[derive(Debug, Default, Deserialize)]
