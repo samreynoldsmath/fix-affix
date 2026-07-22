@@ -53,6 +53,15 @@ pub(crate) struct DictConfig {
     pub(crate) map_characters: Vec<Replace>,
     pub(crate) full_strip: bool,
     pub(crate) check_sharps: bool,
+    pub(crate) check_compound_case: bool,
+    pub(crate) check_compound_duplicate: bool,
+    pub(crate) check_compound_replace: bool,
+    pub(crate) check_compound_triple: bool,
+    pub(crate) compound_more_suffixes: bool,
+    pub(crate) compound_simplified_triple: bool,
+    pub(crate) compound_min_char: u8,
+    pub(crate) compound_max_word: u8,
+    pub(crate) max_compound_suggestions: u8,
 }
 
 #[derive(Debug, Default, Deserialize)]

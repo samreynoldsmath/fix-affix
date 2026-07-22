@@ -178,15 +178,15 @@ The `[config]` table holds the data needed to configure the `.aff` file options.
 |AF|❌|||Aliasing not supported
 |AM|❌|||Aliasing not supported
 |BREAK|🔜
-|CHECKCOMPOUNDCASE|🔜
-|CHECKCOMPOUNDDUP|🔜
+|CHECKCOMPOUNDCASE|v0.3.0|`check_compound_case`|Boolean|Forbid upper case characters at word boundaries in compounds
+|CHECKCOMPOUNDDUP|v0.3.0|`check_compound_duplicate`|Boolean|Forbid word duplication in compounds
 |CHECKCOMPOUNDPATTERN|🔜
-|CHECKCOMPOUNDREP|🔜
-|CHECKCOMPOUNDTRIPLE|🔜
+|CHECKCOMPOUNDREP|v0.3.0|`check_compound_replace`|Boolean|Forbid compounding when a compound word would be a non-compound word with a REP fault
+|CHECKCOMPOUNDTRIPLE|v0.3.0|`check_compound_triple`|Boolean|Forbid compounding when a compound word would contain triple repeating letters
 |CHECKSHARPS|v0.2.0|`check_sharps`|Boolean|Specific flag for German ß
 |COMPLEXPREFIXES|v0.1.0|`complex_prefixes`|Boolean|Allow stacking of two prefixes and disable stacking of suffixes
-|COMPOUNDMIN|🔜
-|COMPOUNDMORESUFFIXES|🔜
+|COMPOUNDMIN|v0.3.0|`compound_min_char`|Unsigned integer|Minimum length of words used for compounding
+|COMPOUNDMORESUFFIXES|v0.3.0|`compound_more_suffixes`|Boolean|Allow twofold suffixes within compounds
 |COMPOUNDRULE|🔜
 |COMPOUNDSYLLABLE|🔜
 |COMPOUNDWORDMAX|🔜
@@ -198,7 +198,7 @@ The `[config]` table holds the data needed to configure the `.aff` file options.
 |KEY|v0.2.0|`key_characters`|Array of strings|Groups of character replacements based on keyboard layout
 |LANG|v0.1.0|`language_code`|String|Set language code for language-specific functions of Hunspell
 |MAP|v0.2.0|`map_characters`|Array of tables|Target certain character replacements when making suggestions (useful for characters with diacritics); array of tables, each having an `add` and `remove` field whose values are strings
-|MAXCPDSUGS|🔜
+|MAXCPDSUGS|v0.3.0|`max_compound_suggestions`|Unsigned integer|Maximum number of suggested compound words
 |MAXDIFF|v0.1.0|`max_diff`|Integers 1 - 10|Similarity factor for n-gram suggestions
 |MAXNGRAMSUGS|v0.1.0|`max_n_gram_suggestions`|Unsigned integer|Maximum number of n-gram suggestions
 |NOSPLITSUGS|v0.1.0|`no_split_suggestions`|Boolean|Disable word suggestions with spaces
@@ -207,7 +207,7 @@ The `[config]` table holds the data needed to configure the `.aff` file options.
 |PHONE|v0.2.0|`phonetic_replace`|Array of tables|Defines a phonetic transcription replacement table; each table entry has an `add` and `remove` field whose values are strings
 |REP|v0.1.0|`replace`|Array of tables|Defines alternative spelling patterns for common misspellings; `replace` is an array of tables, each having an `add` and `remove` field whose values are strings
 |SET|v0.1.0|`encoding`|String|The character encoding of the dictionary
-|SIMPLIFIEDTRIPLE|🔜
+|SIMPLIFIEDTRIPLE|v0.3.0|`compound_simplified_triple`|Boolean|Allow simplified 2-letter forms of the compounds forbidden by `check_compound_triple` (CHECKCOMPOUNDTRIPLE)
 |SUGSWITHDOTS|v0.1.0|`suggest_with_dots`|Boolean|Add dots to suggestions if input word ends in dots
 |SYLLABLENUM|🔜
 |TRY|v0.1.0|`try_characters`|String|The order in which characters are substituted to offer spelling suggestions

@@ -221,6 +221,33 @@ impl DictConfig {
         if self.check_sharps {
             content += "CHECKSHARPS\n";
         }
+        if self.check_compound_case {
+            content += "CHECKCOMPOUNDCASE\n";
+        }
+        if self.check_compound_duplicate {
+            content += "CHECKCOMPOUNDDUP\n";
+        }
+        if self.check_compound_replace {
+            content += "CHECKCOMPOUNDREP\n";
+        }
+        if self.check_compound_triple {
+            content += "CHECKCOMPOUNDTRIPLE\n";
+        }
+        if self.compound_more_suffixes {
+            content += "COMPOUNDMORESUFFIXES\n";
+        }
+        if self.compound_simplified_triple {
+            content += "SIMPLIFIEDTRIPLE\n";
+        }
+        if self.compound_min_char > 0 {
+            content += &format!("COMPOUNDMIN {}\n", self.compound_min_char);
+        }
+        if self.compound_max_word > 0 {
+            content += &format!("COMPOUNDWORDMAX {}\n", self.compound_max_word);
+        }
+        if self.max_compound_suggestions > 0 {
+            content += &format!("MAXCPDSUGS {}\n", self.max_compound_suggestions);
+        }
         if !self.input_conversion.is_empty() {
             content += &format!("ICONV {}\n", self.input_conversion.len());
             for iconv in &self.input_conversion {
