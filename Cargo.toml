@@ -1,6 +1,6 @@
 [package]
 name = "fix-affix"
-version = "0.2.0"
+version = "0.3.0-beta"
 edition = "2024"
 authors = ["Sam Reynolds"]
 description = "Build a Hunspell dictionary via TOML"
