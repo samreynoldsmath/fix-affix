@@ -9,7 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 
 ### Added
 - [x] Add support for BREAK keyword
-- [ ] Add support for compounding:
+- [ ] Add support for COMPOUNDRULE keyword
+- [ ] Add support for advanced compounding (distinct from COMPOUNDRULE):
     - [x] CHECKCOMPOUNDCASE
     - [x] CHECKCOMPOUNDDUP
     - [ ] CHECKCOMPOUNDPATTERN
@@ -17,12 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
     - [x] CHECKCOMPOUNDTRIPLE
     - [x] COMPOUNDMIN
     - [x] COMPOUNDMORESUFFIXES
-    - [ ] COMPOUNDRULE
-    - [ ] COMPOUNDSYLLABLE
+    - [x] COMPOUNDSYLLABLE
     - [x] COMPOUNDWORDMAX
     - [x] MAXCPDSUGS
     - [x] SIMPLIFIEDTRIPLE
-    - [ ] SYLLABLENUM
     - [x] COMPOUNDFLAG
     - [x] COMPOUNDFORBIDFLAG
     - [x] COMPOUNDBEGIN
@@ -32,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
     - [x] COMPOUNDROOT
     - [x] FORCEUCASE
     - [x] ONLYINCOMPOUND
+- [ ] Add `-s` / `--simple-header` flag for generating files with a simplified header
 
 ### Changed
 - [x] **Breaking:** Rename the following TOML parameters:
@@ -41,7 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
     - `config.map_characters` -> `config.remap_characters`
 - [x] **Breaking:** Move affix options `substandard` and `circumfix` to apply to individual affix rules, not the entire affix
 - [x] Allow affix rule `add` field to be empty as long as `strip` is not also empty
-- [ ] Allow creation of dictionary without defining metadata
+- [x] Allow creation of dictionary without defining metadata
 
 ### Fixed
 - Fixed inaccessible `CIRCUMFIX` and `SUBSTANDARD` affix options

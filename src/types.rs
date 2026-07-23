@@ -62,12 +62,26 @@ pub(crate) struct DictConfig {
     pub(crate) compound_min_characters: u8,
     pub(crate) compound_max_words: u8,
     pub(crate) compound_max_suggestions: u8,
+    pub(crate) compound_syllable: CompoundSyllable,
     pub(crate) breakpoints: Vec<String>,
     pub(crate) remove_all_breaks: bool,
 }
 
 #[derive(Debug, Default, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serde(deny_unknown_fields, default)]
+pub(crate) struct CompoundSyllable {
+    pub(crate) max_syllable_count: u8,
+    pub(crate) vowels: String,
+}
+
+impl CompoundSyllable {
+    pub(crate) fn is_default(&self) -> bool {
+        self.max_syllable_count == 0 && self.vowels.is_empty()
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields, default)]
 pub(crate) struct DictMetadata {
     pub(crate) title: String,
     pub(crate) description: String,

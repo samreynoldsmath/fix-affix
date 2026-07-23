@@ -6,7 +6,8 @@ Build a Hunspell dictionary via TOML
 
 `fix-affix` is a command line utility that allows the user to build a Hunspell dictionary from a less-cryptic TOML file. It is a free and open-source tool built in Rust, which I developed to assist me with building a repository of [math words](https://github.com/samreynoldsmath/math-words).
 
-`fix-affix` is a work-in-progress and cannot yet generate every possible Hunspell library. In particular, word compounding has not yet been implemented.
+`fix-affix` is capable of generating most, but not all, Hunspell dictionaries.
+Supported features are documented in the [specification](#toml-file-specification-for-hunspell-dictionaries).
 
 All of the code and documentation was written by a real human, not an LLM.
 
@@ -145,14 +146,17 @@ dismiss/1,103
 ```
 
 ## TOML File Specification for Hunspell Dictionaries
-
-Before learning how to specify a Hunspell library with TOML, you should review the [Hunspell man pages](https://man.archlinux.org/man/hunspell.5.en) to see how `.aff`/`.dic` files are used by Hunspell.
+The descriptions of the behavior of keywords given in the tables below are only short summaries, and may not be complete, totally accurate, or up-to-date.
+One should refer to the [Hunspell man pages](https://man.archlinux.org/man/hunspell.5.en) to get the details of how `.aff`/`.dic` files are used by Hunspell.
 The documentation in this section is based on Hunspell version 1.7.3-1.
 
 Unless otherwise noted:
-- All key-value pairs are optional.
-- Any optional key-value pair that is left unspecified will not be added to the `.aff`/`.dic` files (for better or worse)
-- Boolean values default to `false`
+- All key-value pairs are optional
+- Any optional key-value pair that is left unspecified will take on the default value
+    - Boolean values default to `false`
+    - Integer values default to `0`
+    - Strings, arrays, and tables each default to their empty state
+- Any key-value pair with a default value will not be added to the `.aff`/`.dic` files
 
 |**Legend** |    |
 |-----------|----|
@@ -168,7 +172,7 @@ The `[metadata]` table holds information that is relevant to the maintainers of 
 |`title`            |String             |A short name for your dictionary   |
 |`description`      |String             |A description of your dictionary   |
 |`version`          |String             |The dictionary version (SemVer)    |
-|`authors`          |Array of strings   |The authors of the dictionary      |
+|`authors`          |Array: String      |The authors of the dictionary      |
 
 ### Configuration
 The `[config]` table holds the data needed to configure the `.aff` file options.
@@ -177,8 +181,8 @@ The `[config]` table holds the data needed to configure the `.aff` file options.
 |-------------------|-----------|-------------------|-------------------|------------
 |AF|❌|||Aliasing not supported
 |AM|❌|||Aliasing not supported
-|BREAK|v0.3.0|`breakpoints`|Array of strings|Define new break points for splitting words and checking word parts separately; supports limited regex with "^" and "$" to delete characters at beginning and end of a word
-|BREAK 0|v0.3.0|`remove_all_breaks`|Boolean|Remove all breakpoints (`break_points` must be left unspecified/empty); *note:* this overrides Hunspell's default behavior which uses the dash as the default break, equivalent to `breakpoints = ["-", "^-", "-$"]`
+|BREAK|v0.3.0|`breakpoints`|Array: String|Define breakpoints for splitting words and checking word parts separately; supports limited regex with "^" and "$" to delete characters at beginning and end of a word
+|BREAK 0|v0.3.0|`remove_all_breaks`|Boolean|Remove all breakpoints (`breakpoints` must be left unspecified/empty); *note:* this overrides Hunspell's default behavior which uses the dash "-" as the default break
 |CHECKCOMPOUNDCASE|v0.3.0|`compound_check_case`|Boolean|Forbid upper case characters at word boundaries in compounds
 |CHECKCOMPOUNDDUP|v0.3.0|`compound_check_duplicate`|Boolean|Forbid word duplication in compounds
 |CHECKCOMPOUNDPATTERN|🔜
@@ -189,28 +193,28 @@ The `[config]` table holds the data needed to configure the `.aff` file options.
 |COMPOUNDMIN|v0.3.0|`compound_min_characters`|Unsigned integer|Minimum length of words used for compounding
 |COMPOUNDMORESUFFIXES|v0.3.0|`compound_more_suffixes`|Boolean|Allow twofold suffixes within compounds
 |COMPOUNDRULE|🔜
-|COMPOUNDSYLLABLE|🔜
-|COMPOUNDWORDMAX|🔜
+|COMPOUNDSYLLABLE|v0.3.0|`compound_syllable`|Table: `max_syllable_count`: Unsigned integer, `vowels`: String|Needed for special compounding rules in Hungarian
+|COMPOUNDWORDMAX|v0.3.0|`compound_max_words`|Unsigned integer|Maximum word count in a compound word
 |FORBIDWARN|v0.1.0|`forbid_warn`|Boolean|Words with the `warn` | *WARN* flag are not accepted as correctly spelled
 |FLAG|❌|||All generated Hunspell dictionaries use integer flags with `FLAG num`
 |FULLSTRIP|v0.2.0|`full_strip`|Boolean|Allows affix rules to strip an entire word
-|ICONV|v0.1.0|`input_conversion`|Array of tables|Defines character conversions prior to applying the spell checker; each element of the array is a table with two entries, `remove` and `add`, whose values are strings
+|ICONV|v0.1.0|`input_conversion`|Array: Table: `add`: String, `remove`: String|Defines character conversions prior to applying the spell checker
 |IGNORE|v0.1.0|`ignore_characters`|String|Characters that will be ignored in dictionary words
-|KEY|v0.3.0|`key_groups`|Array of strings|Groups of character replacements based on keyboard layout
+|KEY|v0.3.0|`key_groups`|Array: String|Groups of character replacements based on keyboard layout
 |LANG|v0.1.0|`language_code`|String|Set language code for language-specific functions of Hunspell
-|MAP|v0.3.0|`remap_characters`|Array of tables|Target certain character replacements when making suggestions (useful for characters with diacritics); array of tables, each having an `add` and `remove` field whose values are strings
+|MAP|v0.3.0|`remap_characters`|Array: Table: `add`: String, `remove`: String|Target certain character replacements when making suggestions (useful for characters with diacritics)
 |MAXCPDSUGS|v0.3.0|`compound_max_suggestions`|Unsigned integer|Maximum number of suggested compound words
 |MAXDIFF|v0.1.0|`max_diff`|Integers 1 - 10|Similarity factor for n-gram suggestions
 |MAXNGRAMSUGS|v0.1.0|`max_n_gram_suggestions`|Unsigned integer|Maximum number of n-gram suggestions
 |NOSPLITSUGS|v0.1.0|`no_split_suggestions`|Boolean|Disable word suggestions with spaces
-|OCONV|v0.2.0|`output_conversion`|Array of tables|Defines character conversions after applying the spell checker; each element of the array is a table with two entries, `remove` and `add`, whose values are strings
+|OCONV|v0.2.0|`output_conversion`|Array: Table: `add`: String, `remove`: String|Defines character conversions after applying the spell checker
 |ONLYMAXDIFF|v0.1.0|`only_max_diff`|Boolean|Remove all bad n-gram suggestions
-|PHONE|v0.2.0|`phonetic_replace`|Array of tables|Defines a phonetic transcription replacement table; each table entry has an `add` and `remove` field whose values are strings
-|REP|v0.1.0|`replace`|Array of tables|Defines alternative spelling patterns for common misspellings; `replace` is an array of tables, each having an `add` and `remove` field whose values are strings
+|PHONE|v0.2.0|`phonetic_replace`|Array: Table: `add`: String, `remove`: String|Defines a phonetic transcription replacement table
+|REP|v0.1.0|`replace`|Array: Table: `add`: String, `remove`: String|Defines alternative spelling patterns for common misspellings
 |SET|v0.1.0|`encoding`|String|The character encoding of the dictionary
 |SIMPLIFIEDTRIPLE|v0.3.0|`compound_simplified_triple`|Boolean|Allow simplified 2-letter forms of the compounds forbidden by `compound_check_triple` (CHECKCOMPOUNDTRIPLE)
 |SUGSWITHDOTS|v0.1.0|`suggest_with_dots`|Boolean|Add dots to suggestions if input word ends in dots
-|SYLLABLENUM|🔜
+|SYLLABLENUM|🔜|||The Hunspell documentation does not make it clear how this keyword is used
 |TRY|v0.3.0|`try_order`|String|The order in which characters are substituted to offer spelling suggestions
 |WORDCHARS|v0.3.0|`additional_characters`|String|Extends the character set for valid words
 
@@ -220,8 +224,10 @@ The prefixes are stored in a table `[prefix]`, with each entry itself being a ta
 
 |Hunspell notation  |Supported  |TOML table key     |TOML data type     | Description
 |-------------------|-----------|-------------------|-------------------|------------
-|PFX / SFX|v0.1.0|`rules`|Array of tables|See [Affix Rule Table](#affix-rule-table)
+|PFX / SFX|v0.1.0|`rules`|Array: Table|See [Affix Rule Table](#affix-rule-table)
 |Y / N|v0.1.0|`cross_product`|Boolean|**True by default.** If true, this prefix is permitted to be combined with suffixes
+
+The suffixes are stored in the table `[suffix]` with the same structure as `[prefix]`.
 
 #### Affix Rule Table
 Each element of the array `[prefix.<prefix-key>.rules]` is a table with the following entries:
@@ -231,7 +237,7 @@ Each element of the array `[prefix.<prefix-key>.rules]` is a table with the foll
 |PFX / SFX|v0.1.0|`add`|String|The characters to be appended
 |PFX / SFX|v0.1.0|`strip`|String|The characters to be removed prior to appending
 |PFX / SFX|v0.1.0|`cond`|String|The conditions for when the rule can be applied, specified using the same regex notation as Hunspell
-|PFX / SFX|v0.1.0|`stack`|Array of strings|If `config.complex_prefixes = true`, each string in `stack` is the key of another `prefix` table that is permitted to be secondarily appended; if `config.complex_prefixes = false`, this instead applies to `suffix`
+|PFX / SFX|v0.1.0|`stack`|Array: String|If `config.complex_prefixes = true`, each string in `stack` is the key of another `prefix` table that is permitted to be secondarily appended; if `config.complex_prefixes = false`, this instead applies to `suffix`
 |CIRCUMFIX|v0.3.0|`circumfix`|Boolean|If true, this prefix (or suffix) can only be applied when a suffix (or prefix) with the `circumfix` flag is also applied
 |COMPOUNDBEGIN|v0.3.0|`compound_begin`|Boolean|Word with this affix is allowed be the first element in a compound word
 |COMPOUNDLAST|v0.3.0|`compound_last`|Boolean|Word with this affix is allowed be the last element in a compound word
@@ -250,8 +256,8 @@ Each element of the array `[prefix.<prefix-key>.rules]` is a table with the foll
 |Hunspell notation  |Supported  |TOML table key     |TOML data type     | Description
 |-------------------|-----------|-------------------|-------------------|------------
 |`<stem>/<flags>`|v0.1.0|`stem`|String|The word or word stem
-|`<stem>/<flags>`|v0.1.0|`prefix`|Array of strings|The keys of each prefix table that can be applied to the stem
-|`<stem>/<flags>`|v0.1.0|`suffix`|Array of strings|The keys of each suffix table that can be applied to the stem
+|`<stem>/<flags>`|v0.1.0|`prefix`|Array: String|The keys of each prefix table that can be applied to the stem
+|`<stem>/<flags>`|v0.1.0|`suffix`|Array: String|The keys of each suffix table that can be applied to the stem
 |COMPOUNDFLAG|v0.3.0|`compound`|Boolean|Word permitted to appear in a compound word
 |COMPOUNDFORBIDFLAG|v0.3.0|`compound_forbid`|Boolean|Dictionary words with this flag are removed from the beginning and middle of compound words
 |COMPOUNDBEGIN|v0.3.0|`compound_begin`|Boolean|Allowed be the first element in a compound word
@@ -269,17 +275,19 @@ Each element of the array `[prefix.<prefix-key>.rules]` is a table with the foll
 |SUBSTANDARD|v0.1.0|`substandard`|Boolean|This word will not be suggested or used in morphological generation
 |WARN|v0.1.0|`warn`|Boolean|Used to mark rare words that are often spelling mistakes
 
-### 🔜 Not Yet Implemented
-- Morphological analysis fields:
-    - *ph:*
-    - *st:*
-    - *al:*
-    - *po:*
-    - *ds:*
-    - *is:*
-    - *ts:*
-    - *sp:*
-    - *pa:*
-    - *dp:*
-    - *ip:*
-    - *tp:*
+### Morphological analysis fields
+
+|Hunspell notation  |Supported  |TOML table key     |TOML data type     | Description
+|-------------------|-----------|-------------------|-------------------|------------
+|*ph:*|🔜
+|*st:*|🔜
+|*al:*|🔜
+|*po:*|🔜
+|*ds:*|🔜
+|*is:*|🔜
+|*ts:*|🔜
+|*sp:*|🔜
+|*pa:*|🔜
+|*dp:*|🔜
+|*ip:*|🔜
+|*tp:*|🔜

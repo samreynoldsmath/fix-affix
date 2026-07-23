@@ -255,6 +255,12 @@ impl DictConfig {
         if self.compound_max_suggestions > 0 {
             content += &format!("MAXCPDSUGS {}\n", self.compound_max_suggestions);
         }
+        if !self.compound_syllable.is_default() {
+            content += &format!(
+                "COMPOUNDSYLLABLE {} {}",
+                self.compound_syllable.max_syllable_count, self.compound_syllable.vowels
+            )
+        }
         if !self.input_conversion.is_empty() {
             content += &format!("ICONV {}\n", self.input_conversion.len());
             for iconv in &self.input_conversion {
