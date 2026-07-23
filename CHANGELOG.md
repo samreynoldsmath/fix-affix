@@ -31,7 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
     - [x] COMPOUNDROOT
     - [x] FORCEUCASE
     - [x] ONLYINCOMPOUND
-- [ ] Add `-s` / `--simple-header` flag for generating files with a simplified header
+- [x] Add `-s` / `--simple-header` flag for generating files with a simplified header
 
 ### Changed
 - [x] **Breaking:** Rename the following TOML parameters:

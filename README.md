@@ -4,40 +4,44 @@ Build a Hunspell dictionary via TOML
 ## About
 [Hunspell](https://hunspell.github.io/) is a ubiquitous spell checker tool that defines its dictionaries in a dual-file `.dic`/`.aff` format. While Hunspell itself is a flexible and performant tool, the dictionary format leaves something to be desired when it comes to human-readability and maintenance.
 
-`fix-affix` is a command line utility that allows the user to build a Hunspell dictionary from a less-cryptic TOML file. It is a free and open-source tool built in Rust, which I developed to assist me with building a repository of [math words](https://github.com/samreynoldsmath/math-words).
+`fix-affix` is a command line utility that allows the user to build a Hunspell dictionary from a less-cryptic TOML file.
+It is particularly well-suited for dictionaries with many affix rules or other flags, as it allows the author to reference these flags by name (any string that can be parsed by TOML) rather than memorize a lookup table of single ASCII characters or numbers.
+The utility is capable of generating most, but not all, Hunspell dictionaries.
+Supported features are documented in the [specifications](#toml-file-specification-for-hunspell-dictionaries).
 
-`fix-affix` is capable of generating most, but not all, Hunspell dictionaries.
-Supported features are documented in the [specification](#toml-file-specification-for-hunspell-dictionaries).
-
+`fix-affix` is a free and open-source tool built in Rust, which I developed to assist me with building a repository of [math words](https://github.com/samreynoldsmath/math-words).
 All of the code and documentation was written by a real human, not an LLM.
 
-## Installation
-
-### As a command line utility
+## Quickstart
+Install the binary with `cargo`:
 ```bash
 cargo install fix-affix
 ```
-
-### As a library
-```bash
-cargo add fix-affix
-```
-
-## Usage
 Define your dictionary in `my_dict.toml` following the [specifications](#toml-file-specification-for-hunspell-dictionaries), then run
 ```bash
 fix-affix my_dict.toml
 ```
-which will create `my_dict.dic` and `my_dict.aff` in the same directory as `my_dict.toml`:
+which will create `my_dict.dic` and `my_dict.aff` in the same directory as `my_dict.toml`.
+
+## Usage
 ```text
-.
-├── my_dict.aff
-├── my_dict.dic
-└── my_dict.toml
+fix-affix [OPTIONS] <TOML_FILE>
+
+Arguments:
+  <TOML_FILE>  Path of the TOML file containing dictionary data
+
+Options:
+  -s, --simple-header  Write output files with simplified header
+  -h, --help           Print help
+  -V, --version        Print version
 ```
 
 ## Example
-Define your dictionary in `my_dict.toml`:
+Consider the following words:
+```text
+Rust, Rusty, Rustily, foobarRust, bazRust, bazRusty, bazRustily, bazcrustacean, foorustacean
+```
+These are precisely the words defined in `my_dict.toml`:
 ```toml
 [metadata]
 title = "ex_dict"
@@ -50,105 +54,80 @@ authors = [
 
 [config]
 encoding = "UTF-8"
-complex_prefixes = true
-additional_characters = "'üß"
-try_order = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
-key_groups = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
-remap_characters = [
-    {remove = "u", add = "ü"},
-    {remove = "ss", add = "ß"}
-]
-input_conversion = [{remove = "’", add = "'"}]
-try_replace = [
-    {remove = "ie", add = "ei"},
-    {remove = "alot", add = "a lot"},
-]
 
-[prefix.non]
-rules = [{add = "non"}]
+[prefix.baz]
+rules = [{add = "baz"}]
 
-[prefix.re]
-rules = [{add = "re", stack = ["non"]}]
-
-[suffix."'s"]
+[prefix.foo]
 cross_product = false
-rules = [{add = "'s"}]
-
-[suffix.ive]
 rules = [
-    {strip = "e", add = "ive", cond = "e"},
-    {add = "ive", cond = "[^e]"},
+    {add = "foo", strip = "c", cond = "c"},
+    {add = "foobar", cond = "[^c]"}
+]
+
+[suffix.y]
+rules = [{add = "y", stack = ["ly"]}]
+
+[suffix.ly]
+rules = [
+    {add = "ly", cond = "[^y]"},
+    {add = "ily", strip = "y", cond = "y"}
 ]
 
 [[entry]]
-stem = "Frühstück"
+stem = "Rust"
+prefix = ["baz", "foo"]
+suffix = ["y"]
 keep_case = true
-suffix = ["'s"]
 
 [[entry]]
-stem = "act"
-prefix = ["non", "re"]
-suffix = ["ive"]
-
-[[entry]]
-stem = "dismiss"
-no_suggest = true
-suffix = ["ive"]
+stem = "crustacean"
+prefix = ["baz", "foo"]
+need_affix = true
 ```
 
-Run
+To generate the Hunspell dictionary files, run:
 ```bash
 fix-affix my_dict.toml
 ```
 
-The contents of `my_dict.aff`:
+The contents of the generated `my_dict.dic` are:
+```text
+2
+Rust/10,100,101,103
+crustacean/11,100,101
+```
+
+And the contents of the generated `my_dict.aff` are:
 ```text
 FLAG num
 SET UTF-8
-WORDCHARS 'üß
-COMPLEXPREFIXES
-TRY esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'
-KEY qwertyuiop|asdfghjkl|zxcvbnm
-ICONV 1
-ICONV ’ '
-NOSUGGEST 1
 KEEPCASE 10
+NEEDAFFIX 11
 
 PFX 100 Y 1
-PFX 100   0 non .
+PFX 100   0 baz .
 
-PFX 101 Y 1
-PFX 101   0 re/100 .
+PFX 101 N 2
+PFX 101   c foo c
+PFX 101   0 foobar [^c]
 
-SFX 102 N 1
-SFX 102   0 's .
+SFX 102 Y 2
+SFX 102   0 ly [^y]
+SFX 102   y ily y
 
-SFX 103 Y 2
-SFX 103   e ive e
-SFX 103   0 ive [^e]
-
-REP 2
-REP ie ei
-REP alot a_lot
-
-MAP 2
-MAP uü
-MAP (ss)ß
-
-```
-
-The contents of `my_dict.dic`:
-```text
-3
-Frühstück/10,102
-act/100,101,103
-dismiss/1,103
+SFX 103 Y 1
+SFX 103   0 y/102 .
 ```
 
 ## TOML File Specification for Hunspell Dictionaries
-The descriptions of the behavior of keywords given in the tables below are only short summaries, and may not be complete, totally accurate, or up-to-date.
-One should refer to the [Hunspell man pages](https://man.archlinux.org/man/hunspell.5.en) to get the details of how `.aff`/`.dic` files are used by Hunspell.
 The documentation in this section is based on Hunspell version 1.7.3-1.
+
+⚠️ **Important disclaimer:** The tables below describe how to structure a TOML file to create a desired Hunspell dictionary in the form of a `.aff`/`.dic` pair.
+Crucially, this is *not* intended to describe how to use Hunspell or supplant the Hunspell documentation.
+One should refer to the [Hunspell man pages](https://man.archlinux.org/man/hunspell.5.en) to get the details of how `.aff`/`.dic` files are used by Hunspell.
+In the interest reminding the user of the relevance of (sometimes unclear) Hunspell notation, a column with a short description has been included.
+These descriptions are only short summaries, and may not be complete, totally accurate, or up-to-date.
 
 Unless otherwise noted:
 - All key-value pairs are optional
@@ -177,7 +156,7 @@ The `[metadata]` table holds information that is relevant to the maintainers of 
 ### Configuration
 The `[config]` table holds the data needed to configure the `.aff` file options.
 
-|Hunspell keyword   |Supported  |TOML table key     |TOML data type     | Description
+|Hunspell notation  |Supported  |TOML table key     |TOML data type     | Description
 |-------------------|-----------|-------------------|-------------------|------------
 |AF|❌|||Aliasing not supported
 |AM|❌|||Aliasing not supported
@@ -196,7 +175,7 @@ The `[config]` table holds the data needed to configure the `.aff` file options.
 |COMPOUNDSYLLABLE|v0.3.0|`compound_syllable`|Table: `max_syllable_count`: Unsigned integer, `vowels`: String|Needed for special compounding rules in Hungarian
 |COMPOUNDWORDMAX|v0.3.0|`compound_max_words`|Unsigned integer|Maximum word count in a compound word
 |FORBIDWARN|v0.1.0|`forbid_warn`|Boolean|Words with the `warn` | *WARN* flag are not accepted as correctly spelled
-|FLAG|❌|||All generated Hunspell dictionaries use integer flags with `FLAG num`
+|FLAG|❌|||All dictionaries generated by `fix-affix` use integer flags with `FLAG num`
 |FULLSTRIP|v0.2.0|`full_strip`|Boolean|Allows affix rules to strip an entire word
 |ICONV|v0.1.0|`input_conversion`|Array: Table: `add`: String, `remove`: String|Defines character conversions prior to applying the spell checker
 |IGNORE|v0.1.0|`ignore_characters`|String|Characters that will be ignored in dictionary words
@@ -248,7 +227,7 @@ Each element of the array `[prefix.<prefix-key>.rules]` is a table with the foll
 |ONLYINCOMPOUND|v0.3.0|`compound_only`|Boolean|Can only be used in a compound
 |SUBSTANDARD|v0.3.0|`substandard`|Boolean|Any word with the prefix will not be suggested or used in morphological analysis
 
-**Note:** A 'degenerate' rule with `add` and `strip` both being empty will result in an error.
+⚠️ **Note:** A 'degenerate' rule with `add` and `strip` both being empty will result in an error.
 
 ### Entries
 `[entry]` is an array of tables defining words and word stems, along with several flags that determine how they interact with affixes:

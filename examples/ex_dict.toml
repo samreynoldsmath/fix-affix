@@ -9,47 +9,33 @@ authors = [
 
 [config]
 encoding = "UTF-8"
-complex_prefixes = true
-additional_characters = "'üß"
-try_order = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
-key_groups = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
-remap_characters = [
-    {remove = "u", add = "ü"},
-    {remove = "ss", add = "ß"}
-]
-input_conversion = [{remove = "’", add = "'"}]
-try_replace = [
-    {remove = "ie", add = "ei"},
-    {remove = "alot", add = "a lot"},
-]
 
-[prefix.non]
-rules = [{add = "non"}]
+[prefix.baz]
+rules = [{add = "baz"}]
 
-[prefix.re]
-rules = [{add = "re", stack = ["non"]}]
-
-[suffix."'s"]
+[prefix.foo]
 cross_product = false
-rules = [{add = "'s"}]
-
-[suffix.ive]
 rules = [
-    {strip = "e", add = "ive", cond = "e"},
-    {add = "ive", cond = "[^e]"},
+    {add = "foo", strip = "c", cond = "c"},
+    {add = "foobar", cond = "[^c]"}
+]
+
+[suffix.y]
+rules = [{add = "y", stack = ["ly"]}]
+
+[suffix.ly]
+rules = [
+    {add = "ly", cond = "[^y]"},
+    {add = "ily", strip = "y", cond = "y"}
 ]
 
 [[entry]]
-stem = "Frühstück"
+stem = "Rust"
+prefix = ["baz", "foo"]
+suffix = ["y"]
 keep_case = true
-suffix = ["'s"]
 
 [[entry]]
-stem = "act"
-prefix = ["non", "re"]
-suffix = ["ive"]
-
-[[entry]]
-stem = "dismiss"
-no_suggest = true
-suffix = ["ive"]
+stem = "crustacean"
+prefix = ["baz", "foo"]
+need_affix = true
