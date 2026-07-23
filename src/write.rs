@@ -16,8 +16,8 @@ impl HunspellDict {
     }
 
     /// Writes the .aff file
-    pub fn write_aff_file(&self, aff_file: &Path) -> Result<()> {
-        let aff: String = self.build_aff_string()?;
+    pub fn write_aff_file(&self, aff_file: &Path, simple_header: bool) -> Result<()> {
+        let aff: String = self.build_aff_string(simple_header)?;
         fs::write(aff_file, aff)?;
         Ok(())
     }
@@ -44,8 +44,8 @@ impl HunspellDict {
     }
 
     /// Returns a string containing the contents of the .aff file
-    pub fn build_aff_string(&self) -> Result<String> {
-        let mut content: String = self.build_aff_header();
+    pub fn build_aff_string(&self, simple_header: bool) -> Result<String> {
+        let mut content: String = self.build_aff_header(simple_header);
         content += &self.config.build_aff_preamble_string();
         content += &self.derived.build_flag_keys_string();
         content += &self.build_affix_rules_string(AffixType::Prefix)?;
@@ -57,20 +57,23 @@ impl HunspellDict {
         Ok(content)
     }
 
-    fn build_aff_header(&self) -> String {
-        let now: String = Local::now().format(DATE_FMT).to_string();
-        let utc: String = Utc::now().format(DATE_FMT).to_string();
+    fn build_aff_header(&self, simple_header: bool) -> String {
+        let mut content: String = "".to_string();
+        if !simple_header {
+            let now: String = Local::now().format(DATE_FMT).to_string();
+            let utc: String = Utc::now().format(DATE_FMT).to_string();
 
-        let mut content: String =
-            format!("# {} ({})\n", self.metadata.title, self.metadata.version);
-        content += &format!("# {}\n#\n", self.metadata.description);
-        content += &format!("# {} (UTC {})\n#\n", now, utc);
-        content += "# Authors:\n";
-        for author in &self.metadata.authors {
-            content += &format!("#   {}\n", author);
+            content += &format!("# {} ({})\n", self.metadata.title, self.metadata.version);
+            content += &format!("# {}\n#\n", self.metadata.description);
+            content += &format!("# {} (UTC {})\n#\n", now, utc);
+            content += "# Authors:\n";
+            for author in &self.metadata.authors {
+                content += &format!("#   {}\n", author);
+            }
+            content += "#\n";
         }
 
-        content += "#\n# This Hunspell dictionary was created using ";
+        content += "# This Hunspell dictionary was created using ";
         content += &format!("fix-affix v{}\n", clap::crate_version!());
         content += &format!("#   {}\n\n", REPO_URL);
         content

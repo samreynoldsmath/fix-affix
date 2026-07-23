@@ -24,7 +24,7 @@ fn main() {
         return;
     };
 
-    if let Err(e) = dict.write_aff_file(&aff_file) {
+    if let Err(e) = dict.write_aff_file(&aff_file, args.simple_header) {
         println!("Failed to build Hunspell aff: {}", e)
     };
 }
@@ -32,6 +32,11 @@ fn main() {
 #[derive(Parser)]
 #[command(arg_required_else_help = true, version, about)]
 struct Args {
+    /// Path of the TOML file containing dictionary data
     #[arg(index = 1)]
     toml_file: PathBuf,
+
+    /// Write output files with simplified header
+    #[clap(short, long, action)]
+    simple_header: bool,
 }
