@@ -130,6 +130,12 @@ impl AffixRule {
 
 impl HunspellDict {
     pub(crate) fn compute_derived_data(&mut self) -> Result<()> {
+        if self.config.remove_all_breaks && !self.config.breakpoints.is_empty() {
+            return Err(Error::msg(
+                "config.remove_all_breaks cannot be used with nonempty config.breakpoints",
+            ));
+        }
+
         let sorted_prefix_keys: Vec<String> = get_sorted_affix_keys(&self.prefix);
         let sorted_suffix_keys: Vec<String> = get_sorted_affix_keys(&self.suffix);
 

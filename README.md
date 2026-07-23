@@ -177,7 +177,8 @@ The `[config]` table holds the data needed to configure the `.aff` file options.
 |-------------------|-----------|-------------------|-------------------|------------
 |AF|❌|||Aliasing not supported
 |AM|❌|||Aliasing not supported
-|BREAK|🔜
+|BREAK|v0.3.0|`breakpoints`|Array of strings|Define new break points for splitting words and checking word parts separately; supports limited regex with "^" and "$" to delete characters at beginning and end of a word
+|BREAK 0|v0.3.0|`remove_all_breaks`|Boolean|Remove all breakpoints (`break_points` must be left unspecified/empty); *note:* this overrides Hunspell's default behavior which uses the dash as the default break, equivalent to `breakpoints = ["-", "^-", "-$"]`
 |CHECKCOMPOUNDCASE|v0.3.0|`compound_check_case`|Boolean|Forbid upper case characters at word boundaries in compounds
 |CHECKCOMPOUNDDUP|v0.3.0|`compound_check_duplicate`|Boolean|Forbid word duplication in compounds
 |CHECKCOMPOUNDPATTERN|🔜

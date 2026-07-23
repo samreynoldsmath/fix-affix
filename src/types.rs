@@ -62,6 +62,8 @@ pub(crate) struct DictConfig {
     pub(crate) compound_min_characters: u8,
     pub(crate) compound_max_words: u8,
     pub(crate) compound_max_suggestions: u8,
+    pub(crate) breakpoints: Vec<String>,
+    pub(crate) remove_all_breaks: bool,
 }
 
 #[derive(Debug, Default, Deserialize)]

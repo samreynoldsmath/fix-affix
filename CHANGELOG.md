@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 ## [Unreleased]
 
 ### Added
+- [x] Add support for BREAK keyword
 - [ ] Add support for compounding:
     - [x] CHECKCOMPOUNDCASE
     - [x] CHECKCOMPOUNDDUP

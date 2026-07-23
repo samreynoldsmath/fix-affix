@@ -158,6 +158,20 @@ fn replace_space_with_underscore(s: &str) -> String {
 }
 
 impl DictConfig {
+    fn build_break_string(&self) -> String {
+        if self.remove_all_breaks {
+            return "BREAK 0\n".to_string();
+        }
+        if self.breakpoints.is_empty() {
+            return "".to_string();
+        }
+        let mut content: String = format!("\nBREAK {}\n", self.breakpoints.len());
+        for b in &self.breakpoints {
+            content += &format!("BREAK {}\n", b);
+        }
+        content
+    }
+
     fn build_aff_preamble_string(&self) -> String {
         let mut content: String = "FLAG num\n".to_string();
         if !self.encoding.is_empty() {
@@ -253,6 +267,7 @@ impl DictConfig {
                 content += &format!("OCONV {} {}\n", oconv.remove, oconv.add);
             }
         }
+        content += &self.build_break_string();
         content
     }
 }
