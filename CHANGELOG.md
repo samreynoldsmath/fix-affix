@@ -22,15 +22,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
     - [x] MAXCPDSUGS
     - [x] SIMPLIFIEDTRIPLE
     - [ ] SYLLABLENUM
-    - [ ] COMPOUNDFLAG
-    - [ ] COMPOUNDFORBIDFLAG
-    - [ ] COMPOUNDBEGIN
-    - [ ] COMPOUNDLAST
-    - [ ] COMPOUNDMIDDLE
-    - [ ] COMPOUNDPERMITFLAG
-    - [ ] COMPOUNDROOT
-    - [ ] FORCECASE
-    - [ ] ONLYINCOMPOUND
+    - [x] COMPOUNDFLAG
+    - [x] COMPOUNDFORBIDFLAG
+    - [x] COMPOUNDBEGIN
+    - [x] COMPOUNDLAST
+    - [x] COMPOUNDMIDDLE
+    - [x] COMPOUNDPERMITFLAG
+    - [x] COMPOUNDROOT
+    - [x] FORCEUCASE
+    - [x] ONLYINCOMPOUND
 
 ### Changed
 - **Breaking:** The following TOML parameters have been renamed:
@@ -47,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 ### Fixed
 - Fixed inaccessible `CIRCUMFIX` and `SUBSTANDARD` affix options
 - Fixed incorrect formatting for `REP` strings
+
 
 ## [0.2.0]
 

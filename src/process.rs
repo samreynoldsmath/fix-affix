@@ -17,6 +17,16 @@ fn get_config_code_map() -> Vec<(String, FlagCode)> {
         ("FORBIDDENWORD", 4),
         ("KEEPCASE", 10),
         ("NEEDAFFIX", 11),
+        ("CIRCUMFIX", 12),
+        ("COMPOUNDFLAG", 30),
+        ("COMPOUNDBEGIN", 31),
+        ("COMPOUNDMIDDLE", 32),
+        ("COMPOUNDLAST", 33),
+        ("FORCEUCASE", 34),
+        ("COMPOUNDROOT", 35),
+        ("ONLYINCOMPOUND", 36),
+        ("COMPOUNDPERMITFLAG", 37),
+        ("COMPOUNDFORBIDFLAG", 38),
     ] {
         flag_codes.push((key.to_string(), FlagCode(i)));
     }
@@ -32,6 +42,14 @@ impl DictEntry {
             || (self.keep_case && key == "KEEPCASE")
             || (self.need_affix && key == "NEEDAFFIX")
             || (self.substandard && key == "SUBSTANDARD")
+            || (self.compound && key == "COMPOUNDFLAG")
+            || (self.compound_begin && key == "COMPOUNDBEGIN")
+            || (self.compound_middle && key == "COMPOUNDMIDDLE")
+            || (self.compound_last && key == "COMPOUNDLAST")
+            || (self.compound_force_uppercase && key == "FORCEUCASE")
+            || (self.compound_root && key == "COMPOUNDROOT")
+            || (self.compound_only && key == "ONLYINCOMPOUND")
+            || (self.compound_forbid && key == "COMPOUNDFORBIDFLAG")
     }
 
     pub(crate) fn collect_flag_codes(&self, code_map: &CodeMap) -> Result<Vec<FlagCode>> {
@@ -67,7 +85,15 @@ impl DictEntry {
 
 impl AffixRule {
     fn match_entry_option_to_key(&self, key: &str) -> bool {
-        (self.substandard && key == "SUBSTANDARD") || (self.circumfix && key == "CIRCUMFIX")
+        (self.substandard && key == "SUBSTANDARD")
+            || (self.circumfix && key == "CIRCUMFIX")
+            || (self.compound && key == "COMPOUNDFLAG")
+            || (self.compound_begin && key == "COMPOUNDBEGIN")
+            || (self.compound_middle && key == "COMPOUNDMIDDLE")
+            || (self.compound_last && key == "COMPOUNDLAST")
+            || (self.compound_only && key == "ONLYINCOMPOUND")
+            || (self.compound_interior && key == "COMPOUNDPERMITFLAG")
+            || (self.compound_forbid && key == "COMPOUNDFORBIDFLAG")
     }
 
     pub(crate) fn collect_flag_codes(

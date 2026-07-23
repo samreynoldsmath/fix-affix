@@ -104,6 +104,14 @@ pub(crate) struct DictEntry {
     pub(crate) keep_case: bool,
     pub(crate) need_affix: bool,
     pub(crate) substandard: bool,
+    pub(crate) compound: bool,
+    pub(crate) compound_begin: bool,
+    pub(crate) compound_middle: bool,
+    pub(crate) compound_last: bool,
+    pub(crate) compound_force_uppercase: bool,
+    pub(crate) compound_root: bool,
+    pub(crate) compound_only: bool,
+    pub(crate) compound_forbid: bool,
 }
 
 #[derive(Debug)]
@@ -121,6 +129,13 @@ pub(crate) struct AffixRule {
     pub(crate) stack: Vec<String>,
     pub(crate) circumfix: bool,
     pub(crate) substandard: bool,
+    pub(crate) compound: bool,
+    pub(crate) compound_begin: bool,
+    pub(crate) compound_middle: bool,
+    pub(crate) compound_last: bool,
+    pub(crate) compound_only: bool,
+    pub(crate) compound_interior: bool,
+    pub(crate) compound_forbid: bool,
 }
 
 #[derive(Debug, Default, Deserialize, Clone)]

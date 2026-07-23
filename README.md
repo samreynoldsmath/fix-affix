@@ -224,9 +224,14 @@ The prefixes are stored in a table `[prefix]`, with each entry itself being a ta
 |PFX / SFX|v0.1.0|`rules`|Table of tables|See [Affix Rule Table](#affix-rule-table)
 |Y / N|v0.1.0|`cross_product`|Boolean|**True by default.** If true, this prefix is permitted to be combined with suffixes
 |CIRCUMFIX|v0.1.0|`circumfix`|Boolean|If true, this prefix (or suffix) can only be applied when a suffix (or prefix) with the `circumfix` flag is also applied
-|SUBSTANDARD|v0.1.0|`substandard`|Boolean|Any word with the prefix will not be suggested or used in morphological analysis
+|COMPOUNDBEGIN|v0.3.0|`compound_begin`|Boolean|Word with this affix is allowed be the first element in a compound word
+|COMPOUNDLAST|v0.3.0|`compound_last`|Boolean|Word with this affix is allowed be the last element in a compound word
+|COMPOUNDMIDDLE|v0.3.0|`compound_middle`|Boolean|Word with this affix is allowed be a middle element in a compound word
 |COMPOUNDFLAG|v0.3.0|`compound`|Boolean|Affixed word permitted to appear in a compound word
 |COMPOUNDFORBIDFLAG|v0.3.0|`compound_forbid`|Boolean|Suffixes with this flag forbid compounding of the affixed word
+|COMPOUNDPERMITFLAG|v0.3.0|`compound_interior`|Boolean|Allow compounding when doing so would place this affix in the interior of a compound word
+|ONLYINCOMPOUND|v0.3.0|`compound_only`|Boolean|Can only be used in a compound
+|SUBSTANDARD|v0.1.0|`substandard`|Boolean|Any word with the prefix will not be suggested or used in morphological analysis
 
 #### Affix Rule Table
 The table `[prefix.<prefix-key>.rules]` has the following entries:
@@ -250,24 +255,23 @@ The table `[prefix.<prefix-key>.rules]` has the following entries:
 |`<stem>/<flags>`|v0.1.0|`suffix`|Array of strings|The keys of each suffix table that can be applied to the stem
 |COMPOUNDFLAG|v0.3.0|`compound`|Boolean|Word permitted to appear in a compound word
 |COMPOUNDFORBIDFLAG|v0.3.0|`compound_forbid`|Boolean|Dictionary words with this flag are removed from the beginning and middle of compound words
-|COMPOUNDBEGIN|🔜
-|COMPOUNDLAST|🔜
-|COMPOUNDMIDDLE|🔜
-|COMPOUNDPERMITFLAG|🔜
-|COMPOUNDROOT|🔜
+|COMPOUNDBEGIN|v0.3.0|`compound_begin`|Boolean|Allowed be the first element in a compound word
+|COMPOUNDLAST|v0.3.0|`compound_last`|Boolean|Allowed be the last element in a compound word
+|COMPOUNDMIDDLE|v0.3.0|`compound_middle`|Boolean|Allowed be a middle element in a compound word
+|COMPOUNDROOT|v0.3.0|`compound_root`|Boolean|Only used in Hungarian
 |FORBIDDENWORD|v0.1.0|`forbidden_word`|Boolean|This word will always be marked as misspelled
-|FORCEUCASE|🔜
+|FORCEUCASE|v0.3.0|`compound_force_uppercase`|Boolean|Forces capitalization of the compound word when this word appears as a component
 |LEMMA_PRESENT|❌|||Deprecated by Hunspell
 |KEEPCASE|v0.1.0|`keep_case`|Boolean|This word will be marked as misspelled unless lower/uppercase letters match exactly
 |NEEDAFFIX|v0.1.0|`need_affix`|Boolean|This stem will be marked as misspelled unless it has a prefix or suffix appended
 |NOSUGGEST|v0.1.0|`no_suggest`|Boolean|This word will not appear in spelling suggestions
-|ONLYINCOMPOUND|🔜
+|ONLYINCOMPOUND|v0.3.0|`compound_only`|Boolean|Can only be used in a compound
 |PSEUDOROOT|❌|||Deprecated by Hunspell
 |SUBSTANDARD|v0.1.0|`substandard`|Boolean|This word will not be suggested or used in morphological generation
 |WARN|v0.1.0|`warn`|Used to mark rare words that are often spelling mistakes
 
-### Not Yet Implemented
-- Optional data fields:
+### 🔜 Not Yet Implemented
+- Morphological analysis fields:
     - *ph:*
     - *st:*
     - *al:*
