@@ -33,16 +33,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
     - [x] ONLYINCOMPOUND
 
 ### Changed
-- **Breaking:** The following TOML parameters have been renamed:
-    - `config.additional_word_characters` -> `config.characters.additional`
-    - `config.ignore_characters` -> `config.characters.ignore`
-    - `config.try_characters` -> `config.characters.try_order`
-    - `config.key_characters` -> `config.characters.key_groups`
-    - `config.map_characters` -> `config.characters.remap`
-    - `config.phonetic_replace` -> `config.characters.phonetic_replace`
-    - `config.input_conversion` -> `config.characters.input_conversion`
-    - `config.output_conversion` -> `config.characters.output_conversion`
-- Allow affix rule `add` field to be empty as long as `strip` is not also empty
+- [x] **Breaking:** Rename the following TOML parameters:
+    - `config.additional_word_characters` -> `config.additional_characters`
+    - `config.try_characters` -> `config.try_order`
+    - `config.key_characters` -> `config.key_groups`
+    - `config.map_characters` -> `config.remap_characters`
+- [x] **Breaking:** Move affix options `substandard` and `circumfix` to apply to individual affix rules, not the entire affix
+- [x] Allow affix rule `add` field to be empty as long as `strip` is not also empty
+- [ ] Allow creation of dictionary without defining metadata
 
 ### Fixed
 - Fixed inaccessible `CIRCUMFIX` and `SUBSTANDARD` affix options

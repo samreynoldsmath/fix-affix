@@ -44,36 +44,24 @@ pub(crate) struct DictConfig {
     pub(crate) forbid_warn: bool,
     pub(crate) full_strip: bool,
     pub(crate) check_sharps: bool,
-    pub(crate) characters: CharacterConfig,
-    pub(crate) compound: CompoundConfig,
-}
-
-#[derive(Debug, Default, Deserialize)]
-#[serde(deny_unknown_fields, default)]
-pub(crate) struct CharacterConfig {
-    pub(crate) additional: String,
-    pub(crate) ignore: String,
+    pub(crate) additional_characters: String,
+    pub(crate) ignore_characters: String,
     pub(crate) try_order: String,
     pub(crate) key_groups: Vec<String>,
-    pub(crate) remap: Vec<Replace>,
+    pub(crate) remap_characters: Vec<Replace>,
     pub(crate) try_replace: Vec<Replace>,
     pub(crate) phonetic_replace: Vec<Replace>,
     pub(crate) input_conversion: Vec<Replace>,
     pub(crate) output_conversion: Vec<Replace>,
-}
-
-#[derive(Debug, Default, Deserialize)]
-#[serde(deny_unknown_fields, default)]
-pub(crate) struct CompoundConfig {
-    pub(crate) check_case: bool,
-    pub(crate) check_duplicate: bool,
-    pub(crate) check_replace: bool,
-    pub(crate) check_triple: bool,
-    pub(crate) more_suffixes: bool,
-    pub(crate) simplified_triple: bool,
-    pub(crate) min_char: u8,
-    pub(crate) max_word: u8,
-    pub(crate) max_suggestions: u8,
+    pub(crate) compound_check_case: bool,
+    pub(crate) compound_check_duplicate: bool,
+    pub(crate) compound_check_replace: bool,
+    pub(crate) compound_check_triple: bool,
+    pub(crate) compound_more_suffixes: bool,
+    pub(crate) compound_simplified_triple: bool,
+    pub(crate) compound_min_characters: u8,
+    pub(crate) compound_max_words: u8,
+    pub(crate) compound_max_suggestions: u8,
 }
 
 #[derive(Debug, Default, Deserialize)]

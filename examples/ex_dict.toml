@@ -10,12 +10,10 @@ authors = [
 [config]
 encoding = "UTF-8"
 complex_prefixes = true
-
-[config.characters]
-additional = "'üß"
+additional_characters = "'üß"
 try_order = "esianrtolcdugmphbyfvkwzESIANRTOLCDUGMPHBYFVKWZ'"
 key_groups = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
-remap = [
+remap_characters = [
     {remove = "u", add = "ü"},
     {remove = "ss", add = "ß"}
 ]

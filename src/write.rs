@@ -50,17 +50,10 @@ impl HunspellDict {
         content += &self.derived.build_flag_keys_string();
         content += &self.build_affix_rules_string(AffixType::Prefix)?;
         content += &self.build_affix_rules_string(AffixType::Suffix)?;
-        content += &build_replacements_string(
-            &self.config.characters.try_replace,
-            "REP",
-            replace_formatter,
-        );
-        content += &build_replacements_string(
-            &self.config.characters.phonetic_replace,
-            "PHONE",
-            replace_formatter,
-        );
-        content += &build_replacements_string(&self.config.characters.remap, "MAP", map_formatter);
+        content += &build_replacements_string(&self.config.try_replace, "REP", replace_formatter);
+        content +=
+            &build_replacements_string(&self.config.phonetic_replace, "PHONE", replace_formatter);
+        content += &build_replacements_string(&self.config.remap_characters, "MAP", map_formatter);
         Ok(content)
     }
 
@@ -170,8 +163,8 @@ impl DictConfig {
         if !self.encoding.is_empty() {
             content += &format!("SET {}\n", self.encoding);
         };
-        if !self.characters.additional.is_empty() {
-            content += &format!("WORDCHARS {}\n", self.characters.additional);
+        if !self.additional_characters.is_empty() {
+            content += &format!("WORDCHARS {}\n", self.additional_characters);
         };
         if self.complex_prefixes {
             content += "COMPLEXPREFIXES\n"
@@ -179,20 +172,20 @@ impl DictConfig {
         if !self.language_code.is_empty() {
             content += &format!("LANG {}\n", self.language_code);
         }
-        if !self.characters.ignore.is_empty() {
-            content += &format!("IGNORE {}\n", self.characters.ignore);
+        if !self.ignore_characters.is_empty() {
+            content += &format!("IGNORE {}\n", self.ignore_characters);
         }
-        if !self.characters.try_order.is_empty() {
-            content += &format!("TRY {}\n", self.characters.try_order);
+        if !self.try_order.is_empty() {
+            content += &format!("TRY {}\n", self.try_order);
         }
-        if !self.characters.key_groups.is_empty() {
+        if !self.key_groups.is_empty() {
             content += "KEY ";
-            let n: usize = self.characters.key_groups.len();
-            for char_group in self.characters.key_groups.iter().take(n - 1) {
+            let n: usize = self.key_groups.len();
+            for char_group in self.key_groups.iter().take(n - 1) {
                 content += char_group;
                 content += "|";
             }
-            if let Some(char_group) = self.characters.key_groups.last() {
+            if let Some(char_group) = self.key_groups.last() {
                 content += char_group;
             }
             content += "\n";
@@ -221,42 +214,42 @@ impl DictConfig {
         if self.check_sharps {
             content += "CHECKSHARPS\n";
         }
-        if self.compound.check_case {
+        if self.compound_check_case {
             content += "CHECKCOMPOUNDCASE\n";
         }
-        if self.compound.check_duplicate {
+        if self.compound_check_duplicate {
             content += "CHECKCOMPOUNDDUP\n";
         }
-        if self.compound.check_replace {
+        if self.compound_check_replace {
             content += "CHECKCOMPOUNDREP\n";
         }
-        if self.compound.check_triple {
+        if self.compound_check_triple {
             content += "CHECKCOMPOUNDTRIPLE\n";
         }
-        if self.compound.more_suffixes {
+        if self.compound_more_suffixes {
             content += "COMPOUNDMORESUFFIXES\n";
         }
-        if self.compound.simplified_triple {
+        if self.compound_simplified_triple {
             content += "SIMPLIFIEDTRIPLE\n";
         }
-        if self.compound.min_char > 0 {
-            content += &format!("COMPOUNDMIN {}\n", self.compound.min_char);
+        if self.compound_min_characters > 0 {
+            content += &format!("COMPOUNDMIN {}\n", self.compound_min_characters);
         }
-        if self.compound.max_word > 0 {
-            content += &format!("COMPOUNDWORDMAX {}\n", self.compound.max_word);
+        if self.compound_max_words > 0 {
+            content += &format!("COMPOUNDWORDMAX {}\n", self.compound_max_words);
         }
-        if self.compound.max_suggestions > 0 {
-            content += &format!("MAXCPDSUGS {}\n", self.compound.max_suggestions);
+        if self.compound_max_suggestions > 0 {
+            content += &format!("MAXCPDSUGS {}\n", self.compound_max_suggestions);
         }
-        if !self.characters.input_conversion.is_empty() {
-            content += &format!("ICONV {}\n", self.characters.input_conversion.len());
-            for iconv in &self.characters.input_conversion {
+        if !self.input_conversion.is_empty() {
+            content += &format!("ICONV {}\n", self.input_conversion.len());
+            for iconv in &self.input_conversion {
                 content += &format!("ICONV {} {}\n", iconv.remove, iconv.add);
             }
         }
-        if !self.characters.output_conversion.is_empty() {
-            content += &format!("OCONV {}\n", self.characters.output_conversion.len());
-            for oconv in &self.characters.output_conversion {
+        if !self.output_conversion.is_empty() {
+            content += &format!("OCONV {}\n", self.output_conversion.len());
+            for oconv in &self.output_conversion {
                 content += &format!("OCONV {} {}\n", oconv.remove, oconv.add);
             }
         }
