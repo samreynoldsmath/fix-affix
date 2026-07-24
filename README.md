@@ -6,11 +6,10 @@ Build a Hunspell dictionary via TOML
 
 `fix-affix` is a command line utility that allows the user to build a Hunspell dictionary from a less-cryptic TOML file.
 It is particularly well-suited for dictionaries with many affix rules or other flags, as it allows the author to reference these flags by name (any string that can be parsed by TOML) rather than memorize a lookup table of single ASCII characters or numbers.
-The utility is capable of generating most, but not all, Hunspell dictionaries.
-Supported features are documented in the [specifications](#toml-file-specification-for-hunspell-dictionaries).
+It is capable of generating most, but not all, Hunspell dictionaries; supported features are documented in the [specifications below](#toml-file-specification-for-hunspell-dictionaries).
 
 `fix-affix` is a free and open-source tool built in Rust, which I developed to assist me with building a repository of [math words](https://github.com/samreynoldsmath/math-words).
-All of the code and documentation was written by a real human, not an LLM.
+All of the code and documentation (and bugs and mistakes therein) was written by a real human, not an LLM.
 
 ## Quickstart
 Install the binary with `cargo`:
@@ -124,7 +123,7 @@ SFX 103   0 y/102 .
 The documentation in this section is based on Hunspell version 1.7.3-1.
 
 ⚠️ **Important disclaimer:** The tables below describe how to structure a TOML file to create a desired Hunspell dictionary in the form of a `.aff`/`.dic` pair.
-Crucially, this is *not* intended to describe how to use Hunspell or supplant the Hunspell documentation.
+Crucially, this is *not* intended to describe how to use Hunspell or to supplant the Hunspell documentation.
 One should refer to the [Hunspell man pages](https://man.archlinux.org/man/hunspell.5.en) to get the details of how `.aff`/`.dic` files are used by Hunspell.
 In the interest reminding the user of the relevance of (sometimes unclear) Hunspell notation, a column with a short description has been included.
 These descriptions are only short summaries, and may not be complete, totally accurate, or up-to-date.
@@ -152,6 +151,8 @@ The `[metadata]` table holds information that is relevant to the maintainers of 
 |`description`      |String             |A description of your dictionary   |
 |`version`          |String             |The dictionary version (SemVer)    |
 |`authors`          |Array: String      |The authors of the dictionary      |
+
+💡 *Hint:* If you wish to build a dictionary without metadata in the `.aff` header, pass the `-s` / `--simple-header` flag to the CLI.
 
 ### Configuration
 The `[config]` table holds the data needed to configure the `.aff` file options.
@@ -204,9 +205,28 @@ The prefixes are stored in a table `[prefix]`, with each entry itself being a ta
 |Hunspell notation  |Supported  |TOML table key     |TOML data type     | Description
 |-------------------|-----------|-------------------|-------------------|------------
 |PFX / SFX|v0.1.0|`rules`|Array: Table|See [Affix Rule Table](#affix-rule-table)
-|Y / N|v0.1.0|`cross_product`|Boolean|**True by default.** If true, this prefix is permitted to be combined with suffixes
+|Y / N|v0.1.0|`cross_product`|Boolean|⚠️ **True by default.** If true, this prefix (suffix) is permitted to combine with suffixes (prefixes)
 
 The suffixes are stored in the table `[suffix]` with the same structure as `[prefix]`.
+
+⚠️ **Caution:** Each prefix key can only be used once, and each suffix key can only be used once. While it is possible to define a prefix and suffix to have the same key, doing so carries the danger of misapplying a prefix when one meant to apply a suffix, or vice versa.
+
+💡 *Hint:* A given affix key is recommended to be (but is not required to be) the same as the characters being appended. For instance, in English one (usually) appends an "s" suffix to create a plural noun:
+```text
+[suffix.s]
+rules = [{add = "s"}]
+```
+One might find it more clear to instead use a more descriptive key for this suffix:
+```text
+[suffix.standard_plural]
+rules = [{add = "s"}]
+```
+In TOML terminology, the key `standard_plural` is known as a "bare" key, which can only be composed of ASCII letters, digits, dashes, and underscores. A "quoted" key can be composed of a much broader range of characters provided that it is surrounded by quote marks, such as:
+```text
+[prefix."Weird Key?! 😜"]
+...
+```
+See the [official TOML documentation](https://toml.io/en/v1.1.0#keys) for more information on valid keys.
 
 #### Affix Rule Table
 Each element of the array `[prefix.<prefix-key>.rules]` is a table with the following entries:
@@ -227,7 +247,7 @@ Each element of the array `[prefix.<prefix-key>.rules]` is a table with the foll
 |ONLYINCOMPOUND|v0.3.0|`compound_only`|Boolean|Can only be used in a compound
 |SUBSTANDARD|v0.3.0|`substandard`|Boolean|Any word with the prefix will not be suggested or used in morphological analysis
 
-⚠️ **Note:** A 'degenerate' rule with `add` and `strip` both being empty will result in an error.
+💡 *Note:* A 'degenerate' rule with `add` and `strip` both being empty will result in an error.
 
 ### Entries
 `[entry]` is an array of tables defining words and word stems, along with several flags that determine how they interact with affixes:

@@ -5,43 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [0.3.0]
 
 ### Added
-- [x] Add support for BREAK keyword
-- [ ] Add support for COMPOUNDRULE keyword
-- [ ] Add support for advanced compounding (distinct from COMPOUNDRULE):
-    - [x] CHECKCOMPOUNDCASE
-    - [x] CHECKCOMPOUNDDUP
-    - [ ] CHECKCOMPOUNDPATTERN
-    - [x] CHECKCOMPOUNDREP
-    - [x] CHECKCOMPOUNDTRIPLE
-    - [x] COMPOUNDMIN
-    - [x] COMPOUNDMORESUFFIXES
-    - [x] COMPOUNDSYLLABLE
-    - [x] COMPOUNDWORDMAX
-    - [x] MAXCPDSUGS
-    - [x] SIMPLIFIEDTRIPLE
-    - [x] COMPOUNDFLAG
-    - [x] COMPOUNDFORBIDFLAG
-    - [x] COMPOUNDBEGIN
-    - [x] COMPOUNDLAST
-    - [x] COMPOUNDMIDDLE
-    - [x] COMPOUNDPERMITFLAG
-    - [x] COMPOUNDROOT
-    - [x] FORCEUCASE
-    - [x] ONLYINCOMPOUND
-- [x] Add `-s` / `--simple-header` flag for generating files with a simplified header
+- Add support for BREAK keyword
+- Add support for most advanced compounding (distinct from COMPOUNDRULE):
+    - CHECKCOMPOUNDCASE
+    - CHECKCOMPOUNDDUP
+    - CHECKCOMPOUNDREP
+    - CHECKCOMPOUNDTRIPLE
+    - COMPOUNDMIN
+    - COMPOUNDMORESUFFIXES
+    - COMPOUNDSYLLABLE
+    - COMPOUNDWORDMAX
+    - MAXCPDSUGS
+    - SIMPLIFIEDTRIPLE
+    - COMPOUNDFLAG
+    - COMPOUNDFORBIDFLAG
+    - COMPOUNDBEGIN
+    - COMPOUNDLAST
+    - COMPOUNDMIDDLE
+    - COMPOUNDPERMITFLAG
+    - COMPOUNDROOT
+    - FORCEUCASE
+    - ONLYINCOMPOUND
+- Add `-s` / `--simple-header` flag for generating files with a simplified header
 
 ### Changed
-- [x] **Breaking:** Rename the following TOML parameters:
+- **Breaking:** Rename the following TOML parameters:
     - `config.additional_word_characters` -> `config.additional_characters`
     - `config.try_characters` -> `config.try_order`
     - `config.key_characters` -> `config.key_groups`
     - `config.map_characters` -> `config.remap_characters`
-- [x] **Breaking:** Move affix options `substandard` and `circumfix` to apply to individual affix rules, not the entire affix
-- [x] Allow affix rule `add` field to be empty as long as `strip` is not also empty
-- [x] Allow creation of dictionary without defining metadata
+- **Breaking:** Move affix options `substandard` and `circumfix` to apply to individual affix rules, not the entire affix
+- Allow affix rule `add` field to be empty as long as `strip` is not also empty
+- Allow creation of dictionary without defining metadata
 
 ### Fixed
 - Fixed inaccessible `CIRCUMFIX` and `SUBSTANDARD` affix options
